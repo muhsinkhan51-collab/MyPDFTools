@@ -3,62 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>PDF to Excel - MyPDFTools</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
+            margin: 0;
             font-family: Arial, sans-serif;
             background: #f5f7fb;
-            margin: 0;
-            padding: 40px 20px;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 20px;
             text-align: center;
         }
 
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
+        }
+
         .container {
-            max-width: 700px;
-            margin: auto;
+            max-width: 850px;
+            margin: 45px auto;
+            padding: 20px;
+        }
+
+        .card {
             background: white;
-            padding: 35px;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .upload-area {
+            border: 2px dashed #94a3b8;
             border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            padding: 35px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: #f8fafc;
         }
 
-        h1 {
-            margin-bottom: 10px;
+        .upload-area input {
+            margin-top: 15px;
         }
 
-        p {
-            color: #555;
-        }
-
-        input[type="file"] {
-            margin: 25px 0;
-            padding: 10px;
-            width: 90%;
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
         }
 
         button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #convertBtn {
             background: #2563eb;
             color: white;
-            border: none;
-            padding: 13px 25px;
-            border-radius: 7px;
-            font-size: 16px;
-            cursor: pointer;
+        }
+
+        #clearBtn {
+            background: #64748b;
+            color: white;
         }
 
         button:hover {
-            background: #1d4ed8;
+            opacity: 0.9;
         }
 
         button:disabled {
-            background: #999;
+            opacity: 0.6;
             cursor: not-allowed;
         }
 
         #status {
             margin-top: 20px;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #2563eb;
             font-weight: bold;
         }
     </style>
@@ -66,260 +113,311 @@
 
 <body>
 
-<div class="container">
+    <div class="header">
+        <h1>PDF to Excel</h1>
+        <p>Extract text from PDF files and convert it into Excel</p>
+    </div>
 
-    <h1>PDF to Excel</h1>
+    <div class="container">
 
-    <p>
-        Select a PDF containing text or tables and convert it to Excel.
-    </p>
+        <div class="card">
 
-    <input
-        type="file"
-        id="pdfFile"
-        accept=".pdf"
-    >
+            <div class="upload-area">
 
-    <br>
+                <h2>Select PDF File</h2>
 
-    <button id="convertBtn">
-        Convert to Excel
-    </button>
+                <p>
+                    Choose a PDF file to convert into an Excel spreadsheet.
+                </p>
 
-    <div id="status"></div>
+                <input
+                    type="file"
+                    id="pdfFile"
+                    accept=".pdf,application/pdf"
+                >
 
-</div>
+            </div>
 
+            <div class="buttons">
 
-<!-- SheetJS -->
-<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+                <button id="convertBtn">
+                    Convert to Excel
+                </button>
 
+                <button id="clearBtn">
+                    Clear
+                </button>
 
-<!-- PDF.js -->
-<script type="module">
+            </div>
 
-import * as pdfjsLib from "./node_modules/pdfjs-dist/build/pdf.mjs";
+            <div id="status"></div>
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "./node_modules/pdfjs-dist/build/pdf.worker.mjs";
+            <a href="index.html" class="back">
+                ← Back to MyPDFTools
+            </a>
 
+        </div>
 
-const convertBtn =
-    document.getElementById("convertBtn");
-
-const fileInput =
-    document.getElementById("pdfFile");
-
-const status =
-    document.getElementById("status");
-
-
-convertBtn.addEventListener("click", async function () {
-
-    const file = fileInput.files[0];
+    </div>
 
 
-    if (!file) {
+    <!-- PDF.js -->
+    <script type="module">
 
-        status.textContent =
-            "Please select a PDF file first.";
+        import * as pdfjsLib from
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs";
 
-        return;
-    }
-
-
-    try {
-
-        convertBtn.disabled = true;
-
-        status.textContent =
-            "Reading PDF...";
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs";
 
 
-        const arrayBuffer =
-            await file.arrayBuffer();
+        const pdfFile =
+            document.getElementById("pdfFile");
+
+        const convertBtn =
+            document.getElementById("convertBtn");
+
+        const clearBtn =
+            document.getElementById("clearBtn");
+
+        const status =
+            document.getElementById("status");
 
 
-        const pdf =
-            await pdfjsLib.getDocument({
-                data: arrayBuffer
-            }).promise;
+        convertBtn.addEventListener(
+            "click",
+            async function () {
 
+                if (!pdfFile.files.length) {
 
-        let allRows = [];
+                    status.textContent =
+                        "Please select a PDF file.";
 
-
-        for (
-            let pageNumber = 1;
-            pageNumber <= pdf.numPages;
-            pageNumber++
-        ) {
-
-            status.textContent =
-                "Reading page " +
-                pageNumber +
-                " of " +
-                pdf.numPages +
-                "...";
-
-
-            const page =
-                await pdf.getPage(pageNumber);
-
-
-            const textContent =
-                await page.getTextContent();
-
-
-            const items =
-                textContent.items;
-
-
-            const pageRows = {};
-
-
-            items.forEach(function(item) {
-
-                const text =
-                    item.str.trim();
-
-
-                if (!text) {
                     return;
                 }
 
 
-                const x =
-                    Math.round(item.transform[4]);
+                try {
+
+                    convertBtn.disabled = true;
+
+                    status.textContent =
+                        "Reading PDF...";
 
 
-                const y =
-                    Math.round(item.transform[5]);
+                    const file =
+                        pdfFile.files[0];
+
+                    const arrayBuffer =
+                        await file.arrayBuffer();
 
 
-                const rowKey =
-                    Math.round(y / 5) * 5;
+                    const pdf =
+                        await pdfjsLib.getDocument({
+                            data: arrayBuffer
+                        }).promise;
 
 
-                if (!pageRows[rowKey]) {
-                    pageRows[rowKey] = [];
+                    const workbook =
+                        XLSX.utils.book_new();
+
+
+                    for (
+                        let pageNumber = 1;
+                        pageNumber <= pdf.numPages;
+                        pageNumber++
+                    ) {
+
+                        status.textContent =
+                            "Processing page " +
+                            pageNumber +
+                            " of " +
+                            pdf.numPages +
+                            "...";
+
+
+                        const page =
+                            await pdf.getPage(pageNumber);
+
+
+                        const content =
+                            await page.getTextContent();
+
+
+                        const items =
+                            content.items;
+
+
+                        const rows = [];
+
+
+                        /*
+                         * Group PDF text items into rows
+                         * according to their vertical position.
+                         */
+
+                        const tolerance = 5;
+
+
+                        const sortedItems =
+                            items
+                                .filter(item =>
+                                    item.str &&
+                                    item.str.trim() !== ""
+                                )
+                                .map(item => {
+
+                                    return {
+                                        text: item.str,
+                                        x: item.transform[4],
+                                        y: item.transform[5]
+                                    };
+
+                                })
+                                .sort((a, b) => {
+
+                                    if (
+                                        Math.abs(a.y - b.y) > tolerance
+                                    ) {
+                                        return b.y - a.y;
+                                    }
+
+                                    return a.x - b.x;
+
+                                });
+
+
+                        for (
+                            const item of sortedItems
+                        ) {
+
+                            let row =
+                                rows.find(r =>
+                                    Math.abs(r.y - item.y) <= tolerance
+                                );
+
+
+                            if (!row) {
+
+                                row = {
+                                    y: item.y,
+                                    items: []
+                                };
+
+                                rows.push(row);
+                            }
+
+
+                            row.items.push(item);
+
+                        }
+
+
+                        rows.sort(
+                            (a, b) => b.y - a.y
+                        );
+
+
+                        const table = [];
+
+
+                        rows.forEach(row => {
+
+                            row.items.sort(
+                                (a, b) => a.x - b.x
+                            );
+
+
+                            const cells = [];
+
+
+                            row.items.forEach(item => {
+
+                                cells.push(
+                                    item.text
+                                );
+
+                            });
+
+
+                            if (cells.length > 0) {
+
+                                table.push(cells);
+
+                            }
+
+                        });
+
+
+                        if (table.length === 0) {
+
+                            table.push([
+                                "No text found on this page."
+                            ]);
+
+                        }
+
+
+                        const worksheet =
+                            XLSX.utils.aoa_to_sheet(table);
+
+
+                        XLSX.utils.book_append_sheet(
+                            workbook,
+                            worksheet,
+                            "Page " + pageNumber
+                        );
+
+                    }
+
+
+                    status.textContent =
+                        "Creating Excel file...";
+
+
+                    XLSX.writeFile(
+                        workbook,
+                        "pdf-to-excel.xlsx"
+                    );
+
+
+                    status.textContent =
+                        "PDF converted to Excel successfully!";
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    status.textContent =
+                        "Error converting PDF. Please make sure the PDF contains readable text.";
+
+                } finally {
+
+                    convertBtn.disabled = false;
+
                 }
 
-
-                pageRows[rowKey].push({
-                    x: x,
-                    text: text
-                });
-
-            });
-
-
-            const sortedRows =
-                Object.keys(pageRows)
-                    .sort(function(a, b) {
-                        return Number(b) - Number(a);
-                    });
-
-
-            sortedRows.forEach(function(rowKey) {
-
-                const row =
-                    pageRows[rowKey];
-
-
-                row.sort(function(a, b) {
-                    return a.x - b.x;
-                });
-
-
-                const values =
-                    row.map(function(cell) {
-                        return cell.text;
-                    });
-
-
-                allRows.push(values);
-
-            });
-
-
-            // Empty row between PDF pages
-            allRows.push([]);
-
-        }
-
-
-        if (allRows.length === 0) {
-
-            status.textContent =
-                "No readable text was found in this PDF.";
-
-            return;
-        }
-
-
-        status.textContent =
-            "Creating Excel file...";
-
-
-        // Create Excel workbook
-        const workbook =
-            XLSX.utils.book_new();
-
-
-        // Convert extracted data to worksheet
-        const worksheet =
-            XLSX.utils.aoa_to_sheet(allRows);
-
-
-        // Add worksheet
-        XLSX.utils.book_append_sheet(
-            workbook,
-            worksheet,
-            "PDF Data"
+            }
         );
 
 
-        // Create output filename
-        const outputName =
-            file.name.replace(
-                /\.pdf$/i,
-                ""
-            ) + ".xlsx";
+        clearBtn.addEventListener(
+            "click",
+            function () {
 
+                pdfFile.value = "";
 
-        // Download Excel file
-        XLSX.writeFile(
-            workbook,
-            outputName
+                status.textContent = "";
+
+            }
         );
 
-
-        status.textContent =
-            "Conversion completed successfully!";
-
-    }
+    </script>
 
 
-    catch (error) {
-
-        console.error(error);
-
-        status.textContent =
-            "Conversion failed. Please check the browser console.";
-
-    }
-
-
-    finally {
-
-        convertBtn.disabled = false;
-
-    }
-
-});
-
-</script>
+    <!-- SheetJS -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 
 </body>
 </html>
