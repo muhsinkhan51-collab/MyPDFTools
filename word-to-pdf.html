@@ -3,384 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Word to PDF - MyPDFTools</title>
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
+            margin: 0;
             font-family: Arial, sans-serif;
             background: #f5f7fb;
-            margin: 0;
-            padding: 40px 20px;
+            color: #1f2937;
+        }
+
+        .header {
+            background: #111827;
+            color: white;
+            padding: 20px;
             text-align: center;
         }
 
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
+        }
+
         .container {
-            max-width: 750px;
-            margin: auto;
+            max-width: 850px;
+            margin: 45px auto;
+            padding: 20px;
+        }
+
+        .card {
             background: white;
-            padding: 35px;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .upload-area {
+            border: 2px dashed #94a3b8;
             border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+            padding: 35px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: #f8fafc;
         }
 
-        h1 {
-            margin-bottom: 10px;
+        .upload-area input {
+            margin-top: 15px;
         }
 
-        p {
-            color: #555;
-        }
-
-        input[type="file"] {
-            margin: 25px 0;
-            padding: 10px;
-            width: 90%;
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
         }
 
         button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #convertBtn {
             background: #2563eb;
             color: white;
-            border: none;
-            padding: 13px 25px;
-            border-radius: 7px;
-            font-size: 16px;
-            cursor: pointer;
+        }
+
+        #clearBtn {
+            background: #64748b;
+            color: white;
         }
 
         button:hover {
-            background: #1d4ed8;
+            opacity: 0.9;
         }
 
         button:disabled {
-            background: #999;
+            opacity: 0.6;
             cursor: not-allowed;
         }
 
         #status {
             margin-top: 20px;
             font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        /* Hidden Word document rendering area */
+        #renderArea {
+            position: absolute;
+            left: -10000px;
+            top: 0;
+            width: 794px;
+            background: white;
+            padding: 60px;
+            color: #000;
+            font-family: Arial, sans-serif;
+        }
+
+        #renderArea img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        #renderArea table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #renderArea table,
+        #renderArea th,
+        #renderArea td {
+            border: 1px solid #555;
+        }
+
+        #renderArea th,
+        #renderArea td {
+            padding: 6px;
         }
     </style>
 </head>
 
 <body>
 
-<div class="container">
+    <div class="header">
+        <h1>Word to PDF</h1>
+        <p>Convert Word documents into PDF files</p>
+    </div>
 
-    <h1>Word to PDF</h1>
+    <div class="container">
 
-    <p>
-        Select a Word document (.docx) and convert it to PDF.
-    </p>
+        <div class="card">
 
-    <input
-        type="file"
-        id="wordFile"
-        accept=".docx"
-    >
+            <div class="upload-area">
 
-    <br>
+                <h2>Select Word File</h2>
 
-    <button id="convertBtn">
-        Convert to PDF
-    </button>
+                <p>
+                    Choose a Microsoft Word DOCX file.
+                </p>
 
-    <div id="status"></div>
+                <input
+                    type="file"
+                    id="wordFile"
+                    accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                >
 
-</div>
+            </div>
 
+            <div class="buttons">
 
-<!-- Mammoth -->
-<script src="./node_modules/mammoth/mammoth.browser.min.js"></script>
+                <button id="convertBtn">
+                    Convert to PDF
+                </button>
 
-<!-- html2canvas -->
-<script src="./node_modules/html2canvas/dist/html2canvas.min.js"></script>
+                <button id="clearBtn">
+                    Clear
+                </button>
 
-<!-- jsPDF -->
-<script src="./node_modules/jspdf/dist/jspdf.umd.min.js"></script>
+            </div>
 
+            <div id="status"></div>
 
-<script>
+            <a href="index.html" class="back">
+                ← Back to MyPDFTools
+            </a>
 
-const convertBtn =
-    document.getElementById("convertBtn");
+        </div>
 
-const fileInput =
-    document.getElementById("wordFile");
+    </div>
 
-const status =
-    document.getElementById("status");
 
+    <!-- Hidden area used to render the Word document -->
+    <div id="renderArea"></div>
 
-convertBtn.addEventListener("click", async function () {
 
-    const file = fileInput.files[0];
+    <!-- Mammoth.js -->
+    <script src="https://cdn.jsdelivr.net/npm/mammoth@1.9.0/mammoth.browser.min.js"></script>
 
+    <!-- html2canvas -->
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-    if (!file) {
+    <!-- jsPDF -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
 
-        status.textContent =
-            "Please select a Word file first.";
 
-        return;
-    }
+    <script>
 
+        const wordFile =
+            document.getElementById("wordFile");
 
-    try {
+        const convertBtn =
+            document.getElementById("convertBtn");
 
-        convertBtn.disabled = true;
+        const clearBtn =
+            document.getElementById("clearBtn");
 
-        status.textContent =
-            "Reading Word document...";
+        const status =
+            document.getElementById("status");
 
+        const renderArea =
+            document.getElementById("renderArea");
 
-        const arrayBuffer =
-            await file.arrayBuffer();
 
+        convertBtn.addEventListener(
+            "click",
+            async function () {
 
-        const result =
-            await mammoth.convertToHtml({
-                arrayBuffer: arrayBuffer
-            });
+                if (!wordFile.files.length) {
 
+                    status.textContent =
+                        "Please select a Word document.";
 
-        const html =
-            result.value;
-
-
-        if (!html.trim()) {
-
-            status.textContent =
-                "The Word document appears to be empty.";
-
-            return;
-        }
-
-
-        status.textContent =
-            "Preparing document...";
-
-
-        const documentArea =
-            document.createElement("div");
-
-
-        documentArea.innerHTML = html;
-
-
-        documentArea.style.position =
-            "fixed";
-
-        documentArea.style.left =
-            "-10000px";
-
-        documentArea.style.top =
-            "0";
-
-        documentArea.style.width =
-            "794px";
-
-        documentArea.style.background =
-            "white";
-
-        documentArea.style.color =
-            "black";
-
-        documentArea.style.padding =
-            "60px";
-
-        documentArea.style.boxSizing =
-            "border-box";
-
-        documentArea.style.fontFamily =
-            "Arial, sans-serif";
-
-        documentArea.style.fontSize =
-            "16px";
-
-        documentArea.style.lineHeight =
-            "1.5";
-
-
-        document.body.appendChild(
-            documentArea
-        );
-
-
-        // Basic Word-style formatting
-        const headings =
-            documentArea.querySelectorAll(
-                "h1, h2, h3, h4, h5, h6"
-            );
-
-
-        headings.forEach(function(heading) {
-
-            heading.style.marginTop =
-                "20px";
-
-            heading.style.marginBottom =
-                "10px";
-
-        });
-
-
-        const paragraphs =
-            documentArea.querySelectorAll("p");
-
-
-        paragraphs.forEach(function(paragraph) {
-
-            paragraph.style.marginBottom =
-                "10px";
-
-        });
-
-
-        status.textContent =
-            "Creating PDF...";
-
-
-        const canvas =
-            await html2canvas(
-                documentArea,
-                {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: "#ffffff"
+                    return;
                 }
-            );
 
 
-        document.body.removeChild(
-            documentArea
+                try {
+
+                    convertBtn.disabled = true;
+
+                    status.textContent =
+                        "Reading Word document...";
+
+
+                    const file =
+                        wordFile.files[0];
+
+
+                    const arrayBuffer =
+                        await file.arrayBuffer();
+
+
+                    /*
+                     * Convert DOCX to HTML
+                     */
+
+                    const result =
+                        await mammoth.convertToHtml({
+                            arrayBuffer: arrayBuffer
+                        });
+
+
+                    /*
+                     * Put converted document
+                     * into the hidden rendering area.
+                     */
+
+                    renderArea.innerHTML =
+                        result.value;
+
+
+                    /*
+                     * Basic document formatting.
+                     */
+
+                    const paragraphs =
+                        renderArea.querySelectorAll("p");
+
+
+                    paragraphs.forEach(
+                        paragraph => {
+
+                            paragraph.style.marginBottom =
+                                "10px";
+
+                            paragraph.style.lineHeight =
+                                "1.5";
+
+                        }
+                    );
+
+
+                    const headings =
+                        renderArea.querySelectorAll(
+                            "h1, h2, h3, h4, h5, h6"
+                        );
+
+
+                    headings.forEach(
+                        heading => {
+
+                            heading.style.marginTop =
+                                "18px";
+
+                            heading.style.marginBottom =
+                                "10px";
+
+                        }
+                    );
+
+
+                    /*
+                     * Wait for images and document
+                     * content to be ready.
+                     */
+
+                    await new Promise(
+                        resolve =>
+                            setTimeout(resolve, 500)
+                    );
+
+
+                    status.textContent =
+                        "Preparing PDF...";
+
+
+                    /*
+                     * Render Word document as an image.
+                     */
+
+                    const canvas =
+                        await html2canvas(
+                            renderArea,
+                            {
+                                scale: 2,
+                                useCORS: true,
+                                backgroundColor: "#ffffff"
+                            }
+                        );
+
+
+                    const imageData =
+                        canvas.toDataURL(
+                            "image/jpeg",
+                            0.95
+                        );
+
+
+                    /*
+                     * Create A4 PDF.
+                     */
+
+                    const {
+                        jsPDF
+                    } = window.jspdf;
+
+
+                    const pdf =
+                        new jsPDF({
+                            orientation: "portrait",
+                            unit: "mm",
+                            format: "a4"
+                        });
+
+
+                    const pageWidth =
+                        210;
+
+                    const pageHeight =
+                        297;
+
+                    const margin =
+                        10;
+
+                    const usableWidth =
+                        pageWidth - margin * 2;
+
+
+                    /*
+                     * Calculate image height
+                     * while maintaining aspect ratio.
+                     */
+
+                    const imageWidth =
+                        usableWidth;
+
+                    const imageHeight =
+                        canvas.height *
+                        imageWidth /
+                        canvas.width;
+
+
+                    let heightLeft =
+                        imageHeight;
+
+                    let position =
+                        margin;
+
+
+                    /*
+                     * Add the first page.
+                     */
+
+                    pdf.addImage(
+                        imageData,
+                        "JPEG",
+                        margin,
+                        position,
+                        imageWidth,
+                        imageHeight
+                    );
+
+
+                    heightLeft -=
+                        pageHeight -
+                        margin * 2;
+
+
+                    /*
+                     * Add additional pages.
+                     */
+
+                    while (heightLeft > 0) {
+
+                        position =
+                            heightLeft -
+                            imageHeight +
+                            margin;
+
+                        pdf.addPage();
+
+                        pdf.addImage(
+                            imageData,
+                            "JPEG",
+                            margin,
+                            position,
+                            imageWidth,
+                            imageHeight
+                        );
+
+                        heightLeft -=
+                            pageHeight -
+                            margin * 2;
+
+                    }
+
+
+                    /*
+                     * Download PDF.
+                     */
+
+                    pdf.save(
+                        "word-to-pdf.pdf"
+                    );
+
+
+                    status.textContent =
+                        "Word document converted to PDF successfully!";
+
+
+                } catch (error) {
+
+                    console.error(error);
+
+                    status.textContent =
+                        "Error converting Word document. Please try again.";
+
+                } finally {
+
+                    convertBtn.disabled = false;
+
+                }
+
+            }
         );
 
 
-        const { jsPDF } =
-            window.jspdf;
+        clearBtn.addEventListener(
+            "click",
+            function () {
 
+                wordFile.value = "";
 
-        const pdf =
-            new jsPDF({
-                orientation: "portrait",
-                unit: "mm",
-                format: "a4"
-            });
+                renderArea.innerHTML = "";
 
+                status.textContent = "";
 
-        const pageWidth =
-            pdf.internal.pageSize.getWidth();
-
-
-        const pageHeight =
-            pdf.internal.pageSize.getHeight();
-
-
-        const margin = 10;
-
-
-        const usableWidth =
-            pageWidth - (margin * 2);
-
-
-        const imageHeight =
-            (canvas.height * usableWidth) /
-            canvas.width;
-
-
-        let heightLeft =
-            imageHeight;
-
-
-        let position =
-            margin;
-
-
-        const imageData =
-            canvas.toDataURL(
-                "image/jpeg",
-                0.95
-            );
-
-
-        pdf.addImage(
-            imageData,
-            "JPEG",
-            margin,
-            position,
-            usableWidth,
-            imageHeight
+            }
         );
 
-
-        heightLeft -=
-            pageHeight - (margin * 2);
-
-
-        while (heightLeft > 0) {
-
-            position =
-                heightLeft -
-                imageHeight +
-                margin;
-
-
-            pdf.addPage();
-
-
-            pdf.addImage(
-                imageData,
-                "JPEG",
-                margin,
-                position,
-                usableWidth,
-                imageHeight
-            );
-
-
-            heightLeft -=
-                pageHeight - (margin * 2);
-
-        }
-
-
-        const outputName =
-            file.name.replace(
-                /\.docx$/i,
-                ""
-            ) + ".pdf";
-
-
-        pdf.save(outputName);
-
-
-        status.textContent =
-            "Conversion completed successfully!";
-
-    }
-
-
-    catch (error) {
-
-        console.error(error);
-
-        status.textContent =
-            "Conversion failed. Please check the browser console.";
-
-    }
-
-
-    finally {
-
-        convertBtn.disabled = false;
-
-    }
-
-});
-
-</script>
+    </script>
 
 </body>
 </html>
