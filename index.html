@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>MyPDFTools - Free PDF & Document Tools</title>
+
+    <meta
+        name="description"
+        content="Free online PDF, Word, Excel and image tools. Merge, split and convert documents quickly."
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+    <style>
+
+        /* ================================
+           HOMEPAGE DESIGN
+           ================================ */
+
+        body {
+            background:
+                linear-gradient(
+                    180deg,
+                    #f8fbff 0%,
+                    #eef4ff 45%,
+                    #ffffff 100%
+                );
+        }
+
+        .site-header {
+            background: rgba(255,255,255,0.95);
+            border-bottom: 1px solid #e5e7eb;
+            padding: 18px 0;
+        }
+
+        .header-inner {
+            width: 92%;
+            max-width: 1200px;
+            margin: auto;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: #111827;
+        }
+
+        .top-nav {
+            display: flex;
+            gap: 28px;
+            align-items: center;
+        }
+
+        .top-nav a {
+            text-decoration: none;
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .top-nav a:hover {
+            color: #2563eb;
+        }
+
+
+        /* HERO */
+
+        .hero-section {
+            width: 92%;
+            max-width: 1100px;
+            margin: auto;
+
+            text-align: center;
+
+            padding:
+                90px
+                20px
+                70px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+
+            background: #dbeafe;
+            color: #1d4ed8;
+
+            padding: 8px 16px;
+
+            border-radius: 30px;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            margin-bottom: 20px;
+        }
+
+        .hero-section h1 {
+            font-size: 52px;
+            line-height: 1.1;
+
+            margin: 0 auto 22px;
+
+            max-width: 850px;
+
+            color: #111827;
+        }
+
+        .hero-section h1 span {
+            color: #2563eb;
+        }
+
+        .hero-section p {
+            max-width: 700px;
+
+            margin: auto;
+
+            font-size: 19px;
+
+            line-height: 1.7;
+
+            color: #6b7280;
+        }
+
+
+        /* MAIN TOOL AREA */
+
+        .main-tools {
+            width: 92%;
+            max-width: 1200px;
+
+            margin: 0 auto 80px;
+        }
+
+        .section-heading {
+            text-align: center;
+
+            margin-bottom: 35px;
+        }
+
+        .section-heading h2 {
+            font-size: 32px;
+
+            margin-bottom: 10px;
+
+            color: #111827;
+        }
+
+        .section-heading p {
+            color: #6b7280;
+
+            margin: 0;
+        }
+
+
+        /* TOOL GRID */
+
+        .professional-grid {
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    4,
+                    minmax(0, 1fr)
+                );
+
+            gap: 22px;
+        }
+
+
+        /* TOOL CARD */
+
+        .professional-card {
+            background: white;
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 16px;
+
+            padding: 28px;
+
+            min-height: 235px;
+
+            display: flex;
+
+            flex-direction: column;
+
+            transition:
+                transform .2s ease,
+                box-shadow .2s ease,
+                border-color .2s ease;
+        }
+
+        .professional-card:hover {
+            transform: translateY(-6px);
+
+            border-color: #bfdbfe;
+
+            box-shadow:
+                0 15px 35px
+                rgba(37,99,235,.12);
+        }
+
+
+        /* ICON */
+
+        .tool-icon {
+            width: 52px;
+            height: 52px;
+
+            border-radius: 12px;
+
+            background: #eff6ff;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 25px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .professional-card h3 {
+            margin: 0 0 10px;
+
+            font-size: 19px;
+
+            color: #111827;
+        }
+
+        .professional-card p {
+            color: #6b7280;
+
+            line-height: 1.6;
+
+            font-size: 14px;
+
+            margin: 0 0 22px;
+        }
+
+
+        /* CARD BUTTON */
+
+        .card-button {
+            margin-top: auto;
+
+            display: block;
+
+            text-align: center;
+
+            text-decoration: none;
+
+            background: #2563eb;
+
+            color: white;
+
+            padding: 11px 15px;
+
+            border-radius: 8px;
+
+            font-weight: 700;
+
+            font-size: 14px;
+        }
+
+        .card-button:hover {
+            background: #1d4ed8;
+        }
+
+
+        /* FEATURES */
+
+        .features-section {
+            width: 92%;
+            max-width: 1000px;
+
+            margin: 0 auto 80px;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 25px;
+        }
+
+        .feature {
+            text-align: center;
+
+            padding: 25px;
+        }
+
+        .feature-icon {
+            font-size: 30px;
+
+            margin-bottom: 12px;
+        }
+
+        .feature h3 {
+            margin: 5px 0 8px;
+        }
+
+        .feature p {
+            color: #6b7280;
+
+            font-size: 14px;
+
+            line-height: 1.6;
+        }
+
+
+        /* FOOTER */
+
+        .professional-footer {
+            background: #111827;
+
+            color: #d1d5db;
+
+            padding: 35px 20px;
+
+            text-align: center;
+        }
+
+        .professional-footer strong {
+            color: white;
+        }
+
+
+        /* MOBILE */
+
+        @media (max-width: 1000px) {
+
+            .professional-grid {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 650px) {
+
+            .header-inner {
+                flex-direction: column;
+
+                gap: 15px;
+            }
+
+            .top-nav {
+                gap: 15px;
+            }
+
+            .hero-section {
+                padding-top: 60px;
+            }
+
+            .hero-section h1 {
+                font-size: 38px;
+            }
+
+            .professional-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .features-section {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<!-- HEADER -->
+
+<header class="site-header">
+
+    <div class="header-inner">
+
+        <a
+            href="index.html"
+            class="logo"
+        >
+            My<span>PDF</span>Tools
+        </a>
+
+
+        <nav class="top-nav">
+
+            <a href="#tools">
+                Tools
+            </a>
+
+            <a href="#features">
+                Features
+            </a>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+
+<!-- HERO -->
+
+<section class="hero-section">
+
+    <div class="hero-badge">
+        FREE ONLINE DOCUMENT TOOLS
+    </div>
+
+
+    <h1>
+        Everything you need to
+        <span>work with documents.</span>
+    </h1>
+
+
+    <p>
+        Merge, split, convert and manage
+        your PDF, Word, Excel and image files
+        quickly and easily.
+    </p>
+
+</section>
+
+
+
+<!-- TOOLS -->
+
+<section
+    class="main-tools"
+    id="tools"
+>
+
+    <div class="section-heading">
+
+        <h2>
+            Our Tools
+        </h2>
+
+        <p>
+            Choose a tool to get started
+        </p>
+
+    </div>
+
+
+
+    <div class="professional-grid">
+
+
+        <!-- MERGE PDF -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                📑
+            </div>
+
+            <h3>
+                Merge PDF
+            </h3>
+
+            <p>
+                Combine multiple PDF files
+                into one document.
+            </p>
+
+            <a
+                href="merge-pdf.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+
+        <!-- SPLIT PDF -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                ✂️
+            </div>
+
+            <h3>
+                Split PDF
+            </h3>
+
+            <p>
+                Split a PDF and extract
+                individual pages.
+            </p>
+
+            <a
+                href="split.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+
+        <!-- JPG TO PDF -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                🖼️
+            </div>
+
+            <h3>
+                JPG to PDF
+            </h3>
+
+            <p>
+                Convert images into
+                high-quality PDF files.
+            </p>
+
+            <a
+                href="jpg-to-pdf.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+
+        <!-- PDF TO JPG -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                📷
+            </div>
+
+            <h3>
+                PDF to JPG
+            </h3>
+
+            <p>
+                Convert PDF pages
+                into JPG images.
+            </p>
+
+            <a
+                href="pdf-to-jpg.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+
+        <!-- EXCEL TO PDF -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                📊
+            </div>
+
+            <h3>
+                Excel to PDF
+            </h3>
+
+            <p>
+                Convert Excel spreadsheets
+                into PDF documents.
+            </p>
+
+            <a
+                href="excel-to-pdf.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+
+        <!-- PDF TO EXCEL -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                📈
+            </div>
+
+            <h3>
+                PDF to Excel
+            </h3>
+
+            <p>
+                Extract PDF data
+                into Excel format.
+            </p>
+
+            <a
+                href="pdf-to-excel.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+
+        <!-- WORD TO PDF -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                📝
+            </div>
+
+            <h3>
+                Word to PDF
+            </h3>
+
+            <p>
+                Convert Word documents
+                into PDF files.
+            </p>
+
+            <a
+                href="word-to-pdf.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+
+        <!-- PDF TO WORD -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                📄
+            </div>
+
+            <h3>
+                PDF to Word
+            </h3>
+
+            <p>
+                Convert text PDFs
+                into editable Word files.
+            </p>
+
+            <a
+                href="pdf-to-word.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+
+        <!-- EDIT PDF -->
+
+        <div class="professional-card">
+
+            <div class="tool-icon">
+                ✏️
+            </div>
+
+            <h3>
+                Edit PDF
+            </h3>
+
+            <p>
+                Add text, highlights,
+                drawings, shapes and annotations
+                to PDF files.
+            </p>
+
+            <a
+                href="edit-pdf.html"
+                class="card-button"
+            >
+                Open Tool
+            </a>
+
+        </div>
+
+
+    </div>
+
+</section>
+
+
+
+<!-- FEATURES -->
+
+<section
+    class="features-section"
+    id="features"
+>
+
+
+    <div class="feature">
+
+        <div class="feature-icon">
+            ⚡
+        </div>
+
+        <h3>
+            Fast
+        </h3>
+
+        <p>
+            Process your documents
+            quickly directly in your browser.
+        </p>
+
+    </div>
+
+
+
+    <div class="feature">
+
+        <div class="feature-icon">
+            🔒
+        </div>
+
+        <h3>
+            Private
+        </h3>
+
+        <p>
+            Your files are processed
+            locally whenever the tool supports it.
+        </p>
+
+    </div>
+
+
+
+    <div class="feature">
+
+        <div class="feature-icon">
+            💻
+        </div>
+
+        <h3>
+            Easy to Use
+        </h3>
+
+        <p>
+            Simple tools with a clean
+            interface and no complicated steps.
+        </p>
+
+    </div>
+
+
+</section>
+
+
+
+<!-- FOOTER -->
+
+<footer class="professional-footer">
+
+    <p>
+        <strong>MyPDFTools</strong>
+    </p>
+
+    <p>
+        Free PDF and document tools.
+    </p>
+
+    <p>
+        © 2026 MyPDFTools. All rights reserved.
+    </p>
+
+</footer>
+
+
+</body>
+
+</html>

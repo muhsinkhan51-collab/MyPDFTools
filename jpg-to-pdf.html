@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MyPDFTools - JPG to PDF</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+<body>
+
+<header>
+
+    <div class="header-container">
+
+        <div class="logo">
+            MyPDF<span>Tools</span>
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+    <section class="hero">
+
+        <h1>
+            JPG to PDF
+        </h1>
+
+        <p>
+            Convert multiple images into one PDF document.
+        </p>
+
+    </section>
+
+
+    <section class="tools-section">
+
+        <div class="tool-card">
+
+            <h2>
+                Select Images
+            </h2>
+
+            <p>
+                Select one or more JPG or PNG images.
+            </p>
+
+
+            <input
+                type="file"
+                id="imageFiles"
+                accept="image/jpeg,image/png"
+                multiple
+            >
+
+
+            <br><br>
+
+
+            <button
+                class="tool-button"
+                onclick="convertToPDF()">
+
+                Convert to PDF
+
+            </button>
+
+
+            <p id="status"></p>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<footer>
+
+    © 2026 MyPDFTools. All rights reserved.
+
+</footer>
+
+
+<script src="node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
+
+
+<script>
+
+async function convertToPDF() {
+
+    const input =
+        document.getElementById("imageFiles");
+
+    const status =
+        document.getElementById("status");
+
+    const files =
+        input.files;
+
+
+    if (files.length === 0) {
+
+        status.textContent =
+            "Please select at least one image.";
+
+        return;
+    }
+
+
+    status.textContent =
+        "Creating PDF...";
+
+
+    try {
+
+        const pdfDoc =
+            await PDFLib.PDFDocument.create();
+
+
+        for (const file of files) {
+
+            const imageBytes =
+                await file.arrayBuffer();
+
+
+            let image;
+
+
+            if (file.type === "image/jpeg") {
+
+                image =
+                    await pdfDoc.embedJpg(imageBytes);
+
+            } else if (file.type === "image/png") {
+
+                image =
+                    await pdfDoc.embedPng(imageBytes);
+
+            } else {
+
+                continue;
+
+            }
+
+
+            const imageWidth =
+                image.width;
+
+            const imageHeight =
+                image.height;
+
+
+            const pageWidth = 595;
+
+            const pageHeight = 842;
+
+
+            const scale =
+                Math.min(
+                    pageWidth / imageWidth,
+                    pageHeight / imageHeight
+                );
+
+
+            const width =
+                imageWidth * scale;
+
+            const height =
+                imageHeight * scale;
+
+
+            const page =
+                pdfDoc.addPage(
+                    [pageWidth, pageHeight]
+                );
+
+
+            page.drawImage(image, {
+
+                x:
+                    (pageWidth - width) / 2,
+
+                y:
+                    (pageHeight - height) / 2,
+
+                width:
+                    width,
+
+                height:
+                    height
+
+            });
+
+        }
+
+
+        const pdfBytes =
+            await pdfDoc.save();
+
+
+        const blob =
+            new Blob(
+                [pdfBytes],
+                { type: "application/pdf" }
+            );
+
+
+        const url =
+            URL.createObjectURL(blob);
+
+
+        const link =
+            document.createElement("a");
+
+
+        link.href = url;
+
+        link.download =
+            "images.pdf";
+
+
+        link.click();
+
+
+        URL.revokeObjectURL(url);
+
+
+        status.textContent =
+            "PDF created successfully!";
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Something went wrong while creating the PDF.";
+
+    }
+
+}
+
+</script>
+
+
+</body>
+
+</html>

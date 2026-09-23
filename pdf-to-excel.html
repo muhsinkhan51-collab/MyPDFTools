@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>PDF to Excel - MyPDFTools</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+        }
+
+        input[type="file"] {
+            margin: 25px 0;
+            padding: 10px;
+            width: 90%;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>PDF to Excel</h1>
+
+    <p>
+        Select a PDF containing text or tables and convert it to Excel.
+    </p>
+
+    <input
+        type="file"
+        id="pdfFile"
+        accept=".pdf"
+    >
+
+    <br>
+
+    <button id="convertBtn">
+        Convert to Excel
+    </button>
+
+    <div id="status"></div>
+
+</div>
+
+
+<!-- SheetJS -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+
+<!-- PDF.js -->
+<script type="module">
+
+import * as pdfjsLib from "./node_modules/pdfjs-dist/build/pdf.mjs";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "./node_modules/pdfjs-dist/build/pdf.worker.mjs";
+
+
+const convertBtn =
+    document.getElementById("convertBtn");
+
+const fileInput =
+    document.getElementById("pdfFile");
+
+const status =
+    document.getElementById("status");
+
+
+convertBtn.addEventListener("click", async function () {
+
+    const file = fileInput.files[0];
+
+
+    if (!file) {
+
+        status.textContent =
+            "Please select a PDF file first.";
+
+        return;
+    }
+
+
+    try {
+
+        convertBtn.disabled = true;
+
+        status.textContent =
+            "Reading PDF...";
+
+
+        const arrayBuffer =
+            await file.arrayBuffer();
+
+
+        const pdf =
+            await pdfjsLib.getDocument({
+                data: arrayBuffer
+            }).promise;
+
+
+        let allRows = [];
+
+
+        for (
+            let pageNumber = 1;
+            pageNumber <= pdf.numPages;
+            pageNumber++
+        ) {
+
+            status.textContent =
+                "Reading page " +
+                pageNumber +
+                " of " +
+                pdf.numPages +
+                "...";
+
+
+            const page =
+                await pdf.getPage(pageNumber);
+
+
+            const textContent =
+                await page.getTextContent();
+
+
+            const items =
+                textContent.items;
+
+
+            const pageRows = {};
+
+
+            items.forEach(function(item) {
+
+                const text =
+                    item.str.trim();
+
+
+                if (!text) {
+                    return;
+                }
+
+
+                const x =
+                    Math.round(item.transform[4]);
+
+
+                const y =
+                    Math.round(item.transform[5]);
+
+
+                const rowKey =
+                    Math.round(y / 5) * 5;
+
+
+                if (!pageRows[rowKey]) {
+                    pageRows[rowKey] = [];
+                }
+
+
+                pageRows[rowKey].push({
+                    x: x,
+                    text: text
+                });
+
+            });
+
+
+            const sortedRows =
+                Object.keys(pageRows)
+                    .sort(function(a, b) {
+                        return Number(b) - Number(a);
+                    });
+
+
+            sortedRows.forEach(function(rowKey) {
+
+                const row =
+                    pageRows[rowKey];
+
+
+                row.sort(function(a, b) {
+                    return a.x - b.x;
+                });
+
+
+                const values =
+                    row.map(function(cell) {
+                        return cell.text;
+                    });
+
+
+                allRows.push(values);
+
+            });
+
+
+            // Empty row between PDF pages
+            allRows.push([]);
+
+        }
+
+
+        if (allRows.length === 0) {
+
+            status.textContent =
+                "No readable text was found in this PDF.";
+
+            return;
+        }
+
+
+        status.textContent =
+            "Creating Excel file...";
+
+
+        // Create Excel workbook
+        const workbook =
+            XLSX.utils.book_new();
+
+
+        // Convert extracted data to worksheet
+        const worksheet =
+            XLSX.utils.aoa_to_sheet(allRows);
+
+
+        // Add worksheet
+        XLSX.utils.book_append_sheet(
+            workbook,
+            worksheet,
+            "PDF Data"
+        );
+
+
+        // Create output filename
+        const outputName =
+            file.name.replace(
+                /\.pdf$/i,
+                ""
+            ) + ".xlsx";
+
+
+        // Download Excel file
+        XLSX.writeFile(
+            workbook,
+            outputName
+        );
+
+
+        status.textContent =
+            "Conversion completed successfully!";
+
+    }
+
+
+    catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Conversion failed. Please check the browser console.";
+
+    }
+
+
+    finally {
+
+        convertBtn.disabled = false;
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel to PDF - MyPDFTools</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            margin: 0;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 35px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #555;
+        }
+
+        input[type="file"] {
+            margin: 25px 0;
+            padding: 10px;
+            width: 90%;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 13px 25px;
+            border-radius: 7px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Excel to PDF</h1>
+
+    <p>Select an Excel file and convert it to PDF.</p>
+
+    <input
+        type="file"
+        id="excelFile"
+        accept=".xlsx,.xls,.xlsm,.xltx,.xltm,.xlsb,.csv"
+    >
+
+    <br>
+
+    <button id="convertBtn">
+        Convert to PDF
+    </button>
+
+    <div id="status"></div>
+
+</div>
+
+
+<!-- SheetJS -->
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+<!-- jsPDF -->
+<script src="node_modules/jspdf/dist/jspdf.umd.min.js"></script>
+
+<!-- jsPDF AutoTable -->
+<script src="node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.min.js"></script>
+
+
+<script>
+
+const convertBtn = document.getElementById("convertBtn");
+const fileInput = document.getElementById("excelFile");
+const status = document.getElementById("status");
+
+
+convertBtn.addEventListener("click", async function () {
+
+    const file = fileInput.files[0];
+
+    if (!file) {
+        status.textContent = "Please select an Excel file first.";
+        return;
+    }
+
+    try {
+
+        convertBtn.disabled = true;
+        status.textContent = "Reading Excel file...";
+
+        const arrayBuffer = await file.arrayBuffer();
+
+        const workbook = XLSX.read(arrayBuffer, {
+            type: "array"
+        });
+
+        const { jsPDF } = window.jspdf;
+
+        const pdf = new jsPDF({
+            orientation: "landscape",
+            unit: "mm",
+            format: "a4"
+        });
+
+
+        workbook.SheetNames.forEach(function(sheetName, sheetIndex) {
+
+            if (sheetIndex > 0) {
+                pdf.addPage();
+            }
+
+            const worksheet = workbook.Sheets[sheetName];
+
+            const rows = XLSX.utils.sheet_to_json(
+                worksheet,
+                {
+                    header: 1,
+                    defval: ""
+                }
+            );
+
+
+            if (!rows || rows.length === 0) {
+
+                pdf.setFontSize(14);
+                pdf.text(
+                    "Sheet: " + sheetName,
+                    15,
+                    20
+                );
+
+                pdf.text(
+                    "This sheet is empty.",
+                    15,
+                    30
+                );
+
+                return;
+            }
+
+
+            const header = rows[0].map(function(cell) {
+                return String(cell);
+            });
+
+
+            const body = rows.slice(1).map(function(row) {
+
+                return row.map(function(cell) {
+                    return String(cell);
+                });
+
+            });
+
+
+            pdf.setFontSize(14);
+
+            pdf.text(
+                "Sheet: " + sheetName,
+                14,
+                12
+            );
+
+
+            pdf.autoTable({
+
+                head: [header],
+
+                body: body,
+
+                startY: 18,
+
+                theme: "grid",
+
+                styles: {
+                    fontSize: 7,
+                    cellPadding: 2,
+                    overflow: "linebreak"
+                },
+
+                headStyles: {
+                    fontSize: 7
+                },
+
+                margin: {
+                    top: 18,
+                    left: 8,
+                    right: 8,
+                    bottom: 10
+                },
+
+                tableWidth: "auto",
+
+                horizontalPageBreak: true,
+
+                horizontalPageBreakRepeat: 0
+
+            });
+
+        });
+
+
+        const originalName = file.name;
+
+        const pdfName = originalName
+            .replace(/\.[^/.]+$/, "")
+            + ".pdf";
+
+
+        pdf.save(pdfName);
+
+        status.textContent = "Conversion completed successfully!";
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Conversion failed. Please check the browser console.";
+
+    }
+
+    finally {
+
+        convertBtn.disabled = false;
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

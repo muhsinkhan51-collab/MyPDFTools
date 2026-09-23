@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to Word - MyPDFTools</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        input[type="file"] {
+            display: block;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        #status {
+            text-align: center;
+            margin-top: 20px;
+            color: #444;
+            min-height: 24px;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h2>MyPDFTools</h2>
+</header>
+
+<div class="container">
+
+    <h1>PDF to Word</h1>
+
+    <p class="description">
+        Convert a PDF file into an editable Word document.
+    </p>
+
+    <input type="file" id="pdfFile" accept=".pdf">
+
+    <button id="convertBtn">
+        Convert to Word
+    </button>
+
+    <div id="status"></div>
+
+</div>
+
+<!-- JSZip: creates the real DOCX ZIP package -->
+<script src="./node_modules/jszip/dist/jszip.min.js"></script>
+
+<script type="module">
+
+import * as pdfjsLib from "./node_modules/pdfjs-dist/build/pdf.mjs";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "./node_modules/pdfjs-dist/build/pdf.worker.mjs";
+
+
+const fileInput = document.getElementById("pdfFile");
+const convertBtn = document.getElementById("convertBtn");
+const status = document.getElementById("status");
+
+
+/* Escape characters for XML */
+function escapeXml(text) {
+
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&apos;");
+
+}
+
+
+/* Extract text from the PDF */
+async function extractPdfText(file) {
+
+    const arrayBuffer = await file.arrayBuffer();
+
+    const pdf = await pdfjsLib.getDocument({
+        data: arrayBuffer
+    }).promise;
+
+    let pages = [];
+
+    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
+
+        status.textContent =
+            "Reading PDF page " + pageNumber + " of " + pdf.numPages + "...";
+
+        const page = await pdf.getPage(pageNumber);
+
+        const textContent = await page.getTextContent();
+
+        const items = textContent.items;
+
+        /*
+        Group text according to approximate vertical position.
+        This helps preserve lines from the PDF.
+        */
+
+        const lines = [];
+
+        for (const item of items) {
+
+            const text = item.str;
+
+            if (!text || !text.trim()) {
+                continue;
+            }
+
+            const y = Math.round(item.transform[5]);
+
+            let existingLine = null;
+
+            for (const line of lines) {
+
+                if (Math.abs(line.y - y) <= 4) {
+                    existingLine = line;
+                    break;
+                }
+
+            }
+
+            if (existingLine) {
+
+                existingLine.items.push(item);
+
+            } else {
+
+                lines.push({
+                    y: y,
+                    items: [item]
+                });
+
+            }
+
+        }
+
+
+        /* Sort lines from top to bottom */
+
+        lines.sort((a, b) => b.y - a.y);
+
+
+        let pageText = [];
+
+        for (const line of lines) {
+
+            line.items.sort((a, b) => {
+
+                return a.transform[4] - b.transform[4];
+
+            });
+
+            const lineText = line.items
+                .map(item => item.str)
+                .join(" ")
+                .trim();
+
+            if (lineText) {
+                pageText.push(lineText);
+            }
+
+        }
+
+
+        pages.push(pageText);
+
+    }
+
+    return pages;
+
+}
+
+
+/* Create the Word document XML */
+
+function createDocumentXml(pages) {
+
+    let body = "";
+
+    for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
+
+        const page = pages[pageIndex];
+
+        for (const line of page) {
+
+            body += `
+                <w:p>
+                    <w:r>
+                        <w:t xml:space="preserve">${escapeXml(line)}</w:t>
+                    </w:r>
+                </w:p>
+            `;
+
+        }
+
+
+        /*
+        Add page break between PDF pages.
+        */
+
+        if (pageIndex < pages.length - 1) {
+
+            body += `
+                <w:p>
+                    <w:r>
+                        <w:br w:type="page"/>
+                    </w:r>
+                </w:p>
+            `;
+
+        }
+
+    }
+
+
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<w:document
+    xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+
+    <w:body>
+
+        ${body}
+
+        <w:sectPr>
+
+            <w:pgSz
+                w:w="12240"
+                w:h="15840"/>
+
+            <w:pgMar
+                w:top="1440"
+                w:right="1440"
+                w:bottom="1440"
+                w:left="1440"/>
+
+        </w:sectPr>
+
+    </w:body>
+
+</w:document>`;
+
+}
+
+
+/* Create the DOCX file */
+
+async function createDocx(pages) {
+
+    const zip = new JSZip();
+
+
+    /* Content Types */
+
+    const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<Types
+    xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+
+    <Default
+        Extension="rels"
+        ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+
+    <Default
+        Extension="xml"
+        ContentType="application/xml"/>
+
+    <Override
+        PartName="/word/document.xml"
+        ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+
+    <Override
+        PartName="/docProps/core.xml"
+        ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+
+    <Override
+        PartName="/docProps/app.xml"
+        ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/>
+
+</Types>`;
+
+
+    /* Root relationships */
+
+    const rootRelationships = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<Relationships
+    xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+
+    <Relationship
+        Id="rId1"
+        Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+        Target="word/document.xml"/>
+
+    <Relationship
+        Id="rId2"
+        Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties"
+        Target="docProps/core.xml"/>
+
+    <Relationship
+        Id="rId3"
+        Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties"
+        Target="docProps/app.xml"/>
+
+</Relationships>`;
+
+
+    /* Document relationships */
+
+    const documentRelationships = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<Relationships
+    xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`;
+
+
+    /* Core properties */
+
+    const coreProperties = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<cp:coreProperties
+    xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:dcterms="http://purl.org/dc/terms/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <dc:title>Converted PDF</dc:title>
+
+    <dc:creator>MyPDFTools</dc:creator>
+
+    <cp:lastModifiedBy>MyPDFTools</cp:lastModifiedBy>
+
+</cp:coreProperties>`;
+
+
+    /* Application properties */
+
+    const appProperties = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<Properties
+    xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties">
+
+    <Application>MyPDFTools</Application>
+
+</Properties>`;
+
+
+    /* Add files to ZIP */
+
+    zip.file(
+        "[Content_Types].xml",
+        contentTypes
+    );
+
+    zip.folder("_rels").file(
+        ".rels",
+        rootRelationships
+    );
+
+    zip.folder("word").file(
+        "document.xml",
+        createDocumentXml(pages)
+    );
+
+    zip.folder("word")
+        .folder("_rels")
+        .file(
+            "document.xml.rels",
+            documentRelationships
+        );
+
+    zip.folder("docProps").file(
+        "core.xml",
+        coreProperties
+    );
+
+    zip.folder("docProps").file(
+        "app.xml",
+        appProperties
+    );
+
+
+    /* Generate actual DOCX ZIP */
+
+    return await zip.generateAsync({
+
+        type: "blob",
+
+        mimeType:
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+
+    });
+
+}
+
+
+/* Convert button */
+
+convertBtn.addEventListener("click", async () => {
+
+    try {
+
+        if (!fileInput.files.length) {
+
+            status.textContent =
+                "Please select a PDF file first.";
+
+            return;
+
+        }
+
+
+        convertBtn.disabled = true;
+
+        status.textContent =
+            "Starting conversion...";
+
+
+        const file = fileInput.files[0];
+
+
+        /* Extract PDF text */
+
+        const pages = await extractPdfText(file);
+
+
+        /* Create DOCX */
+
+        status.textContent =
+            "Creating Word document...";
+
+        const docxBlob = await createDocx(pages);
+
+
+        /* Download */
+
+        const url = URL.createObjectURL(docxBlob);
+
+        const link = document.createElement("a");
+
+        link.href = url;
+
+        link.download = "converted-document.docx";
+
+        document.body.appendChild(link);
+
+        link.click();
+
+        link.remove();
+
+        URL.revokeObjectURL(url);
+
+
+        status.textContent =
+            "Conversion complete! Word file downloaded.";
+
+    }
+
+    catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Error: " + error.message;
+
+    }
+
+    finally {
+
+        convertBtn.disabled = false;
+
+    }
+
+});
+
+</script>
+
+</body>
+</html>

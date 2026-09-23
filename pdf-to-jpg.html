@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MyPDFTools - PDF to JPG</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div class="header-container">
+
+        <div class="logo">
+            MyPDF<span>Tools</span>
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<main>
+
+    <section class="hero">
+
+        <h1>
+            PDF to JPG
+        </h1>
+
+        <p>
+            Convert every page of a PDF into a high-quality JPG image.
+        </p>
+
+    </section>
+
+
+
+    <section class="tools-section">
+
+        <div class="tool-card">
+
+            <h2>
+                Select PDF
+            </h2>
+
+            <p>
+                Choose a PDF file to convert.
+            </p>
+
+
+            <input
+                type="file"
+                id="pdfFile"
+                accept=".pdf,application/pdf"
+            >
+
+
+            <br><br>
+
+
+            <button
+                class="tool-button"
+                onclick="convertPDFToJPG()">
+
+                Convert to JPG
+
+            </button>
+
+
+            <p id="status"></p>
+
+
+            <div id="downloads"></div>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+
+<footer>
+
+    © 2026 MyPDFTools. All rights reserved.
+
+</footer>
+
+
+
+<script type="module">
+
+import * as pdfjsLib from "./node_modules/pdfjs-dist/build/pdf.mjs";
+
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "./node_modules/pdfjs-dist/build/pdf.worker.mjs";
+
+
+window.convertPDFToJPG = async function () {
+
+    const fileInput =
+        document.getElementById("pdfFile");
+
+    const status =
+        document.getElementById("status");
+
+    const downloads =
+        document.getElementById("downloads");
+
+
+    const file =
+        fileInput.files[0];
+
+
+    if (!file) {
+
+        status.textContent =
+            "Please select a PDF file.";
+
+        return;
+    }
+
+
+    status.textContent =
+        "Loading PDF...";
+
+
+    downloads.innerHTML = "";
+
+
+    try {
+
+        const arrayBuffer =
+            await file.arrayBuffer();
+
+
+        const pdf =
+            await pdfjsLib.getDocument({
+                data: arrayBuffer
+            }).promise;
+
+
+        status.textContent =
+            "PDF loaded. Converting pages...";
+
+
+        for (
+            let pageNumber = 1;
+            pageNumber <= pdf.numPages;
+            pageNumber++
+        ) {
+
+
+            status.textContent =
+                "Converting page " +
+                pageNumber +
+                " of " +
+                pdf.numPages +
+                "...";
+
+
+            const page =
+                await pdf.getPage(pageNumber);
+
+
+            const scale = 2;
+
+
+            const viewport =
+                page.getViewport({
+                    scale: scale
+                });
+
+
+            const canvas =
+                document.createElement("canvas");
+
+
+            const context =
+                canvas.getContext("2d");
+
+
+            canvas.width =
+                viewport.width;
+
+
+            canvas.height =
+                viewport.height;
+
+
+            await page.render({
+
+                canvasContext:
+                    context,
+
+                viewport:
+                    viewport
+
+            }).promise;
+
+
+            const jpgData =
+                canvas.toDataURL(
+                    "image/jpeg",
+                    0.92
+                );
+
+
+            const link =
+                document.createElement("a");
+
+
+            link.href =
+                jpgData;
+
+
+            link.download =
+                "page-" +
+                pageNumber +
+                ".jpg";
+
+
+            link.textContent =
+                "Download Page " +
+                pageNumber;
+
+
+            link.className =
+                "tool-button";
+
+
+            link.style.margin =
+                "5px";
+
+
+            downloads.appendChild(link);
+
+
+            downloads.appendChild(
+                document.createElement("br")
+            );
+
+        }
+
+
+        status.textContent =
+            "Conversion completed successfully!";
+
+
+    } catch (error) {
+
+        console.error(error);
+
+
+        status.textContent =
+            "Something went wrong while converting the PDF.";
+
+    }
+
+};
+
+</script>
+
+
+</body>
+
+</html>

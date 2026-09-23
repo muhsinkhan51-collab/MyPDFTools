@@ -1,0 +1,3833 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Edit PDF - MyPDFTools</title>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #f5f7fa;
+    color: #1f2937;
+}
+
+/* HEADER */
+
+.header {
+    height: 64px;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 28px;
+
+    position: sticky;
+    top: 0;
+
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: 700;
+
+    color: #111827;
+
+    text-decoration: none;
+}
+
+.home-link {
+    color: #4b5563;
+
+    text-decoration: none;
+
+    font-size: 15px;
+}
+
+.home-link:hover {
+    color: #111827;
+}
+
+
+/* TOP BAR */
+
+.topbar {
+    background: white;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    padding: 14px 22px;
+
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    position: sticky;
+
+    top: 64px;
+
+    z-index: 900;
+}
+
+.top-btn {
+    border: 0;
+
+    border-radius: 8px;
+
+    padding: 11px 18px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.upload-btn {
+    background: #111827;
+
+    color: white;
+}
+
+.upload-btn:hover {
+    background: #000;
+}
+
+.save-btn {
+    background: #16a34a;
+
+    color: white;
+}
+
+.save-btn:hover {
+    background: #15803d;
+}
+
+#fileName {
+    margin-left: 8px;
+
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+/* EDITOR */
+
+.editor {
+    display: flex;
+
+    align-items: flex-start;
+}
+
+
+/* TOOLBAR */
+
+.toolbar {
+    width: 285px;
+
+    min-width: 285px;
+
+    background: white;
+
+    border-right: 1px solid #e5e7eb;
+
+    padding: 16px;
+
+    position: sticky;
+
+    top: 119px;
+
+    height: calc(100vh - 119px);
+
+    overflow-y: auto;
+}
+
+.tool-section {
+    margin-bottom: 18px;
+}
+
+.section-title {
+    font-size: 12px;
+
+    font-weight: 700;
+
+    color: #6b7280;
+
+    text-transform: uppercase;
+
+    margin-bottom: 8px;
+
+    letter-spacing: .5px;
+}
+
+.tool-btn {
+    width: 100%;
+
+    border: 1px solid #e5e7eb;
+
+    background: white;
+
+    color: #374151;
+
+    padding: 9px 10px;
+
+    border-radius: 7px;
+
+    cursor: pointer;
+
+    text-align: left;
+
+    margin-bottom: 6px;
+
+    font-size: 13px;
+}
+
+.tool-btn:hover {
+    background: #f3f4f6;
+}
+
+.tool-btn.active {
+    background: #111827;
+
+    color: white;
+
+    border-color: #111827;
+}
+
+
+/* CONTROLS */
+
+.control {
+    margin-bottom: 10px;
+}
+
+.control label {
+    display: block;
+
+    font-size: 12px;
+
+    font-weight: 600;
+
+    color: #4b5563;
+
+    margin-bottom: 5px;
+}
+
+.control input[type="text"],
+.control input[type="number"],
+.control select {
+
+    width: 100%;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 6px;
+
+    padding: 8px;
+
+    background: white;
+
+    font-size: 13px;
+}
+
+.control input[type="color"] {
+
+    width: 100%;
+
+    height: 36px;
+
+    padding: 2px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 6px;
+
+    cursor: pointer;
+}
+
+.control input[type="range"] {
+    width: 100%;
+}
+
+.checkbox-row {
+
+    display: flex;
+
+    gap: 8px;
+
+    align-items: center;
+
+    margin-bottom: 8px;
+
+    font-size: 13px;
+
+    color: #374151;
+}
+
+.checkbox-row input {
+    width: auto;
+}
+
+
+/* VIEWER */
+
+.viewer {
+    flex: 1;
+
+    min-width: 0;
+
+    padding: 30px;
+
+    overflow-x: auto;
+}
+
+#pdfContainer {
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    gap: 30px;
+}
+
+.page-wrapper {
+
+    position: relative;
+
+    background: white;
+
+    box-shadow: 0 4px 18px rgba(0,0,0,.12);
+}
+
+.pdf-canvas {
+
+    display: block;
+}
+
+.draw-canvas {
+
+    position: absolute;
+
+    left: 0;
+
+    top: 0;
+
+    z-index: 5;
+}
+
+
+/* TEXT */
+
+.text-box {
+
+    position: absolute;
+
+    z-index: 20;
+
+    min-width: 40px;
+
+    min-height: 25px;
+
+    padding: 3px 5px;
+
+    border: 1px dashed transparent;
+
+    white-space: pre-wrap;
+
+    word-break: break-word;
+
+    outline: none;
+
+    user-select: text;
+
+    cursor: default;
+}
+
+.text-box.selected {
+
+    border: 1px dashed #2563eb;
+
+    cursor: move;
+}
+
+.text-box:hover {
+
+    border-color: #93c5fd;
+}
+
+
+/* RESIZE */
+
+.resize-handle {
+
+    display: none;
+
+    position: absolute;
+
+    width: 10px;
+
+    height: 10px;
+
+    right: -5px;
+
+    bottom: -5px;
+
+    background: #2563eb;
+
+    border: 1px solid white;
+
+    border-radius: 2px;
+
+    cursor: nwse-resize;
+}
+
+.text-box.selected .resize-handle {
+    display: block;
+}
+
+
+/* EMPTY */
+
+.empty-message {
+
+    text-align: center;
+
+    color: #6b7280;
+
+    padding: 100px 20px;
+
+    font-size: 16px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.status {
+
+    font-size: 12px;
+
+    color: #6b7280;
+
+    margin-top: 8px;
+
+    line-height: 1.4;
+}
+
+
+@media (max-width: 800px) {
+
+    .toolbar {
+
+        width: 230px;
+
+        min-width: 230px;
+    }
+
+    .viewer {
+        padding: 15px;
+    }
+
+    .header {
+        padding: 0 15px;
+    }
+
+    .topbar {
+        padding: 10px;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+    <a href="index.html" class="logo">
+        MyPDFTools
+    </a>
+
+    <a href="index.html" class="home-link">
+        Home
+    </a>
+
+</header>
+
+
+<div class="topbar">
+
+    <label class="top-btn upload-btn">
+
+        Upload PDF
+
+        <input
+            type="file"
+            id="pdfInput"
+            accept="application/pdf"
+            hidden
+        >
+
+    </label>
+
+
+    <button
+        class="top-btn save-btn"
+        id="saveBtn"
+    >
+        Save PDF
+    </button>
+
+
+    <span id="fileName">
+        No PDF selected
+    </span>
+
+</div>
+
+
+<div class="editor">
+
+
+<!-- =========================================
+     TOOLBAR
+========================================= -->
+
+<aside class="toolbar">
+
+
+<div class="tool-section">
+
+<div class="section-title">
+    Tools
+</div>
+
+
+<button
+    class="tool-btn active"
+    data-tool="select"
+>
+    ↖ Move / Select Text
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="draw"
+>
+    ✎ Draw
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="text"
+>
+    T Add Text
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="highlight"
+>
+    ▰ Highlight
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="line"
+>
+    ╱ Line
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="arrow"
+>
+    ➜ Arrow
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="rectangle"
+>
+    □ Rectangle
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="circle"
+>
+    ○ Circle
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="eraser"
+>
+    ⌫ Eraser
+</button>
+
+
+<button
+    class="tool-btn"
+    data-tool="whiteout"
+>
+    ▱ Whiteout
+</button>
+
+</div>
+
+
+
+<!-- =========================================
+     TEXT SETTINGS
+========================================= -->
+
+<div class="tool-section">
+
+<div class="section-title">
+    Text Settings
+</div>
+
+
+<div class="control">
+
+<label>
+    Font
+</label>
+
+<select id="fontFamily">
+
+<option>Arial</option>
+<option>Arial Black</option>
+<option>Arial Narrow</option>
+
+<option>Aptos</option>
+<option>Aptos Display</option>
+
+<option>Bahnschrift</option>
+
+<option>Book Antiqua</option>
+
+<option>Calibri</option>
+<option>Cambria</option>
+<option>Candara</option>
+
+<option>Century Gothic</option>
+
+<option>Comic Sans MS</option>
+
+<option>Consolas</option>
+<option>Constantia</option>
+<option>Corbel</option>
+
+<option>Courier New</option>
+
+<option>Franklin Gothic Medium</option>
+
+<option>Garamond</option>
+<option>Georgia</option>
+
+<option>Impact</option>
+
+<option>Lucida Console</option>
+<option>Lucida Sans</option>
+
+<option>Palatino Linotype</option>
+
+<option>Segoe UI</option>
+
+<option>Tahoma</option>
+
+<option>Times New Roman</option>
+
+<option>Trebuchet MS</option>
+
+<option>Verdana</option>
+
+</select>
+
+</div>
+
+
+<div class="control">
+
+<label>
+    Font Size
+</label>
+
+<input
+    type="number"
+    id="fontSize"
+    value="20"
+    min="6"
+    max="150"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+    Text Color
+</label>
+
+<input
+    type="color"
+    id="textColor"
+    value="#111111"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+    Text Transparency:
+    <span id="textTransparencyValue">
+        0%
+    </span>
+</label>
+
+<input
+    type="range"
+    id="textTransparency"
+    min="0"
+    max="100"
+    value="0"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+    Text Background
+</label>
+
+<input
+    type="color"
+    id="textBackground"
+    value="#ffff00"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+    Background Transparency:
+    <span id="textBackgroundTransparencyValue">
+        100%
+    </span>
+</label>
+
+<input
+    type="range"
+    id="textBackgroundTransparency"
+    min="0"
+    max="100"
+    value="100"
+>
+
+</div>
+
+
+<div class="checkbox-row">
+
+<input
+    type="checkbox"
+    id="boldText"
+>
+
+<label for="boldText">
+    Bold
+</label>
+
+</div>
+
+
+<div class="checkbox-row">
+
+<input
+    type="checkbox"
+    id="italicText"
+>
+
+<label for="italicText">
+    Italic
+</label>
+
+</div>
+
+
+<div class="checkbox-row">
+
+<input
+    type="checkbox"
+    id="underlineText"
+>
+
+<label for="underlineText">
+    Underline
+</label>
+
+</div>
+
+
+<div class="control">
+
+<label>
+    Alignment
+</label>
+
+<select id="textAlign">
+
+<option value="left">
+    Left
+</option>
+
+<option value="center">
+    Center
+</option>
+
+<option value="right">
+    Right
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+
+<!-- =========================================
+     HIGHLIGHT
+========================================= -->
+
+<div class="tool-section">
+
+<div class="section-title">
+    Highlight
+</div>
+
+
+<div class="control">
+
+<label>
+    Highlight Color
+</label>
+
+<input
+    type="color"
+    id="highlightColor"
+    value="#ffff00"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+
+Highlight Transparency:
+
+<span id="highlightTransparencyValue">
+    70%
+</span>
+
+</label>
+
+<input
+    type="range"
+    id="highlightTransparency"
+    min="0"
+    max="100"
+    value="70"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+    Highlight Thickness
+</label>
+
+<input
+    type="range"
+    id="highlightThickness"
+    min="5"
+    max="80"
+    value="25"
+>
+
+</div>
+
+</div>
+
+
+
+<!-- =========================================
+     DRAWING
+========================================= -->
+
+<div class="tool-section">
+
+<div class="section-title">
+    Drawing
+</div>
+
+
+<div class="control">
+
+<label>
+    Drawing Color
+</label>
+
+<input
+    type="color"
+    id="drawColor"
+    value="#ff0000"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+    Brush Size
+</label>
+
+<input
+    type="range"
+    id="brushSize"
+    min="1"
+    max="30"
+    value="4"
+>
+
+</div>
+
+</div>
+
+
+
+<!-- =========================================
+     ACTIONS
+========================================= -->
+
+<div class="tool-section">
+
+<div class="section-title">
+    Actions
+</div>
+
+
+<button
+    class="tool-btn"
+    id="undoBtn"
+>
+    ↶ Undo
+</button>
+
+
+<button
+    class="tool-btn"
+    id="redoBtn"
+>
+    ↷ Redo
+</button>
+
+
+<button
+    class="tool-btn"
+    id="deleteTextBtn"
+>
+    🗑 Delete Selected Text
+</button>
+
+
+<button
+    class="tool-btn"
+    id="clearBtn"
+>
+    Clear Page
+</button>
+
+</div>
+
+
+<div class="status">
+
+<strong>
+    Move Text:
+</strong>
+
+<br>
+
+Select "Move / Select Text", then drag any text box.
+
+<br><br>
+
+<strong>
+    Fonts:
+</strong>
+
+<br>
+
+The selected browser font is preserved when saving the PDF.
+
+</div>
+
+
+</aside>
+
+
+
+<!-- =========================================
+     PDF VIEWER
+========================================= -->
+
+<main class="viewer">
+
+<div id="pdfContainer">
+
+<div
+    class="empty-message"
+    id="emptyMessage"
+>
+    Upload a PDF file to start editing.
+</div>
+
+</div>
+
+</main>
+
+</div>
+
+
+
+<script src="./node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
+
+<script
+    src="./node_modules/html2canvas/dist/html2canvas.min.js">
+</script>
+
+
+<script type="module">
+
+
+/* =========================================
+   PDF.JS
+========================================= */
+
+import * as pdfjsLib
+from "./node_modules/pdfjs-dist/build/pdf.mjs";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+"./node_modules/pdfjs-dist/build/pdf.worker.mjs";
+
+
+const {
+    PDFDocument
+} = PDFLib;
+
+
+
+/* =========================================
+   VARIABLES
+========================================= */
+
+let pdfBytes = null;
+
+let pdfDocument = null;
+
+let currentTool = "select";
+
+let pages = [];
+
+let selectedTextBox = null;
+
+let dragData = null;
+
+let resizeData = null;
+
+
+
+/* =========================================
+   ELEMENTS
+========================================= */
+
+const pdfInput =
+document.getElementById("pdfInput");
+
+const pdfContainer =
+document.getElementById("pdfContainer");
+
+const emptyMessage =
+document.getElementById("emptyMessage");
+
+const fileName =
+document.getElementById("fileName");
+
+const saveBtn =
+document.getElementById("saveBtn");
+
+const fontFamily =
+document.getElementById("fontFamily");
+
+const fontSize =
+document.getElementById("fontSize");
+
+const textColor =
+document.getElementById("textColor");
+
+const textTransparency =
+document.getElementById("textTransparency");
+
+const textTransparencyValue =
+document.getElementById(
+    "textTransparencyValue"
+);
+
+const textBackground =
+document.getElementById("textBackground");
+
+const textBackgroundTransparency =
+document.getElementById(
+    "textBackgroundTransparency"
+);
+
+const textBackgroundTransparencyValue =
+document.getElementById(
+    "textBackgroundTransparencyValue"
+);
+
+const boldText =
+document.getElementById("boldText");
+
+const italicText =
+document.getElementById("italicText");
+
+const underlineText =
+document.getElementById(
+    "underlineText"
+);
+
+const textAlign =
+document.getElementById("textAlign");
+
+const highlightColor =
+document.getElementById(
+    "highlightColor"
+);
+
+const highlightTransparency =
+document.getElementById(
+    "highlightTransparency"
+);
+
+const highlightTransparencyValue =
+document.getElementById(
+    "highlightTransparencyValue"
+);
+
+const highlightThickness =
+document.getElementById(
+    "highlightThickness"
+);
+
+const drawColor =
+document.getElementById("drawColor");
+
+const brushSize =
+document.getElementById("brushSize");
+
+const undoBtn =
+document.getElementById("undoBtn");
+
+const redoBtn =
+document.getElementById("redoBtn");
+
+const deleteTextBtn =
+document.getElementById(
+    "deleteTextBtn"
+);
+
+const clearBtn =
+document.getElementById("clearBtn");
+
+
+
+/* =========================================
+   TOOL SELECTION
+========================================= */
+
+document
+.querySelectorAll(".tool-btn[data-tool]")
+.forEach(button => {
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            document
+            .querySelectorAll(
+                ".tool-btn[data-tool]"
+            )
+            .forEach(btn =>
+                btn.classList.remove(
+                    "active"
+                )
+            );
+
+            button.classList.add(
+                "active"
+            );
+
+            currentTool =
+                button.dataset.tool;
+
+            deselectText();
+
+            updateCursor();
+
+        }
+    );
+
+});
+
+
+
+/* =========================================
+   CURSOR
+========================================= */
+
+function updateCursor() {
+
+    document
+    .querySelectorAll(
+        ".page-wrapper"
+    )
+    .forEach(page => {
+
+        if (
+            currentTool === "text"
+        ) {
+
+            page.style.cursor =
+                "text";
+
+        }
+
+        else if (
+            currentTool === "select"
+        ) {
+
+            page.style.cursor =
+                "default";
+
+        }
+
+        else {
+
+            page.style.cursor =
+                "crosshair";
+
+        }
+
+    });
+
+}
+
+
+
+/* =========================================
+   UPLOAD PDF
+========================================= */
+
+pdfInput.addEventListener(
+    "change",
+    async () => {
+
+        const file =
+            pdfInput.files[0];
+
+        if (!file) return;
+
+        pdfBytes =
+            await file.arrayBuffer();
+
+        fileName.textContent =
+            file.name;
+
+        await renderPDF();
+
+    }
+);
+
+
+
+/* =========================================
+   RENDER PDF
+========================================= */
+
+async function renderPDF() {
+
+    pdfContainer.innerHTML = "";
+
+    pages = [];
+
+    selectedTextBox = null;
+
+    emptyMessage.classList.add(
+        "hidden"
+    );
+
+
+    pdfDocument =
+        await pdfjsLib
+        .getDocument({
+            data: pdfBytes
+        })
+        .promise;
+
+
+    for (
+        let pageNumber = 1;
+        pageNumber <=
+        pdfDocument.numPages;
+        pageNumber++
+    ) {
+
+        const page =
+            await pdfDocument
+            .getPage(pageNumber);
+
+
+        const scale = 1.5;
+
+
+        const viewport =
+            page.getViewport({
+                scale
+            });
+
+
+        const wrapper =
+            document.createElement(
+                "div"
+            );
+
+        wrapper.className =
+            "page-wrapper";
+
+        wrapper.dataset.pageNumber =
+            pageNumber;
+
+
+        wrapper.style.width =
+            viewport.width + "px";
+
+        wrapper.style.height =
+            viewport.height + "px";
+
+
+
+        /* PDF CANVAS */
+
+        const canvas =
+            document.createElement(
+                "canvas"
+            );
+
+        canvas.className =
+            "pdf-canvas";
+
+        canvas.width =
+            viewport.width;
+
+        canvas.height =
+            viewport.height;
+
+        canvas.style.width =
+            viewport.width + "px";
+
+        canvas.style.height =
+            viewport.height + "px";
+
+
+        wrapper.appendChild(canvas);
+
+
+        const ctx =
+            canvas.getContext("2d");
+
+
+        await page.render({
+
+            canvasContext: ctx,
+
+            viewport
+
+        }).promise;
+
+
+
+        /* DRAW CANVAS */
+
+        const drawCanvas =
+            document.createElement(
+                "canvas"
+            );
+
+        drawCanvas.className =
+            "draw-canvas";
+
+        drawCanvas.width =
+            viewport.width;
+
+        drawCanvas.height =
+            viewport.height;
+
+        drawCanvas.style.width =
+            viewport.width + "px";
+
+        drawCanvas.style.height =
+            viewport.height + "px";
+
+
+        wrapper.appendChild(
+            drawCanvas
+        );
+
+
+        const pageData = {
+
+            pageNumber,
+
+            wrapper,
+
+            canvas,
+
+            drawCanvas,
+
+            ctx:
+                drawCanvas.getContext(
+                    "2d"
+                ),
+
+            textBoxes: [],
+
+            history: [],
+
+            redoHistory: [],
+
+            drawing: false,
+
+            startX: 0,
+
+            startY: 0,
+
+            lastX: 0,
+
+            lastY: 0
+
+        };
+
+
+        pages.push(pageData);
+
+        pdfContainer.appendChild(
+            wrapper
+        );
+
+
+        setupCanvasEvents(
+            pageData
+        );
+
+        setupPageEvents(
+            pageData
+        );
+
+    }
+
+
+    updateCursor();
+
+}
+
+
+
+/* =========================================
+   GET PAGE
+========================================= */
+
+function getPageData(element) {
+
+    const wrapper =
+        element.closest(
+            ".page-wrapper"
+        );
+
+    if (!wrapper) return null;
+
+
+    const pageNumber =
+        Number(
+            wrapper.dataset.pageNumber
+        );
+
+
+    return pages[
+        pageNumber - 1
+    ];
+
+}
+
+
+
+/* =========================================
+   PAGE EVENTS
+========================================= */
+
+function setupPageEvents(
+    pageData
+) {
+
+    const wrapper =
+        pageData.wrapper;
+
+
+    wrapper.addEventListener(
+        "mousedown",
+        event => {
+
+            if (
+                currentTool ===
+                "text"
+            ) {
+
+                if (
+                    event.target ===
+                    wrapper ||
+
+                    event.target
+                    .classList
+                    .contains(
+                        "pdf-canvas"
+                    ) ||
+
+                    event.target
+                    .classList
+                    .contains(
+                        "draw-canvas"
+                    )
+                ) {
+
+                    addTextBox(
+                        pageData,
+                        event.offsetX,
+                        event.offsetY
+                    );
+
+                }
+
+            }
+
+        }
+    );
+
+}
+
+
+
+/* =========================================
+   ADD TEXT
+========================================= */
+
+function addTextBox(
+    pageData,
+    x,
+    y
+) {
+
+    const box =
+        document.createElement(
+            "div"
+        );
+
+
+    box.className =
+        "text-box";
+
+
+    box.contentEditable =
+        true;
+
+
+    box.spellcheck =
+        false;
+
+
+    box.innerText =
+        "Type text";
+
+
+    box.style.left =
+        x + "px";
+
+    box.style.top =
+        y + "px";
+
+
+    applyTextStyle(
+        box
+    );
+
+
+    box.dataset.page =
+        pageData.pageNumber;
+
+
+
+    /* RESIZE */
+
+    const handle =
+        document.createElement(
+            "div"
+        );
+
+    handle.className =
+        "resize-handle";
+
+
+    box.appendChild(
+        handle
+    );
+
+
+    pageData.wrapper.appendChild(
+        box
+    );
+
+
+    pageData.textBoxes.push(
+        box
+    );
+
+
+    selectTextBox(
+        box
+    );
+
+
+    currentTool =
+        "select";
+
+
+    document
+    .querySelectorAll(
+        ".tool-btn[data-tool]"
+    )
+    .forEach(btn =>
+        btn.classList.remove(
+            "active"
+        )
+    );
+
+
+    document
+    .querySelector(
+        '[data-tool="select"]'
+    )
+    .classList.add(
+        "active"
+    );
+
+
+    box.addEventListener(
+        "focus",
+        () => {
+
+            if (
+                box.innerText
+                .trim() ===
+                "Type text"
+            ) {
+
+                box.innerText = "";
+
+            }
+
+        },
+        {
+            once: true
+        }
+    );
+
+
+    box.addEventListener(
+        "mousedown",
+        textMouseDown
+    );
+
+
+    handle.addEventListener(
+        "mousedown",
+        resizeMouseDown
+    );
+
+
+    box.focus();
+
+    placeCaretAtEnd(
+        box
+    );
+
+}
+
+
+
+/* =========================================
+   APPLY TEXT STYLE
+========================================= */
+
+function applyTextStyle(
+    box
+) {
+
+    box.style.fontFamily =
+        fontFamily.value;
+
+    box.style.fontSize =
+        fontSize.value + "px";
+
+
+    box.style.color =
+        colorWithTransparency(
+            textColor.value,
+            Number(
+                textTransparency.value
+            )
+        );
+
+
+    box.style.backgroundColor =
+        colorWithTransparency(
+            textBackground.value,
+            Number(
+                textBackgroundTransparency.value
+            )
+        );
+
+
+    box.style.fontWeight =
+        boldText.checked
+        ? "700"
+        : "400";
+
+
+    box.style.fontStyle =
+        italicText.checked
+        ? "italic"
+        : "normal";
+
+
+    box.style.textDecoration =
+        underlineText.checked
+        ? "underline"
+        : "none";
+
+
+    box.style.textAlign =
+        textAlign.value;
+
+}
+
+
+
+/* =========================================
+   PLACE CARET
+========================================= */
+
+function placeCaretAtEnd(
+    element
+) {
+
+    const range =
+        document.createRange();
+
+    const selection =
+        window.getSelection();
+
+
+    range.selectNodeContents(
+        element
+    );
+
+    range.collapse(false);
+
+
+    selection.removeAllRanges();
+
+    selection.addRange(
+        range
+    );
+
+}
+
+
+
+/* =========================================
+   SELECT TEXT
+========================================= */
+
+function selectTextBox(
+    box
+) {
+
+    document
+    .querySelectorAll(
+        ".text-box"
+    )
+    .forEach(item => {
+
+        item.classList.remove(
+            "selected"
+        );
+
+    });
+
+
+    selectedTextBox =
+        box;
+
+
+    if (box) {
+
+        box.classList.add(
+            "selected"
+        );
+
+    }
+
+}
+
+
+
+/* =========================================
+   DESELECT
+========================================= */
+
+function deselectText() {
+
+    document
+    .querySelectorAll(
+        ".text-box"
+    )
+    .forEach(item => {
+
+        item.classList.remove(
+            "selected"
+        );
+
+    });
+
+
+    selectedTextBox =
+        null;
+
+}
+
+
+
+/* =========================================
+   MOVE TEXT
+========================================= */
+
+function textMouseDown(
+    event
+) {
+
+    const box =
+        event.currentTarget;
+
+
+    if (
+        event.target
+        .classList
+        .contains(
+            "resize-handle"
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    selectTextBox(
+        box
+    );
+
+
+    if (
+        currentTool ===
+        "select"
+    ) {
+
+        event.preventDefault();
+
+
+        const page =
+            getPageData(
+                box
+            );
+
+
+        const rect =
+            box.getBoundingClientRect();
+
+
+        dragData = {
+
+            box,
+
+            page,
+
+            offsetX:
+                event.clientX -
+                rect.left,
+
+            offsetY:
+                event.clientY -
+                rect.top
+
+        };
+
+
+        document.addEventListener(
+            "mousemove",
+            moveText
+        );
+
+
+        document.addEventListener(
+            "mouseup",
+            stopMoveText
+        );
+
+    }
+
+}
+
+
+
+/* =========================================
+   MOVE TEXT
+========================================= */
+
+function moveText(
+    event
+) {
+
+    if (!dragData) return;
+
+
+    const {
+        box,
+        page,
+        offsetX,
+        offsetY
+    } = dragData;
+
+
+    const pageRect =
+        page.wrapper
+        .getBoundingClientRect();
+
+
+    let x =
+        event.clientX -
+        pageRect.left -
+        offsetX;
+
+
+    let y =
+        event.clientY -
+        pageRect.top -
+        offsetY;
+
+
+    const maxX =
+        page.wrapper.clientWidth -
+        box.offsetWidth;
+
+
+    const maxY =
+        page.wrapper.clientHeight -
+        box.offsetHeight;
+
+
+    x = Math.max(
+        0,
+        Math.min(
+            x,
+            maxX
+        )
+    );
+
+
+    y = Math.max(
+        0,
+        Math.min(
+            y,
+            maxY
+        )
+    );
+
+
+    box.style.left =
+        x + "px";
+
+
+    box.style.top =
+        y + "px";
+
+}
+
+
+
+/* =========================================
+   STOP MOVE
+========================================= */
+
+function stopMoveText() {
+
+    document.removeEventListener(
+        "mousemove",
+        moveText
+    );
+
+
+    document.removeEventListener(
+        "mouseup",
+        stopMoveText
+    );
+
+
+    dragData = null;
+
+}
+
+
+
+/* =========================================
+   RESIZE START
+========================================= */
+
+function resizeMouseDown(
+    event
+) {
+
+    event.preventDefault();
+
+    event.stopPropagation();
+
+
+    const handle =
+        event.currentTarget;
+
+
+    const box =
+        handle.parentElement;
+
+
+    const rect =
+        box.getBoundingClientRect();
+
+
+    resizeData = {
+
+        box,
+
+        startX:
+            event.clientX,
+
+        startY:
+            event.clientY,
+
+        startWidth:
+            rect.width,
+
+        startHeight:
+            rect.height
+
+    };
+
+
+    document.addEventListener(
+        "mousemove",
+        resizeText
+    );
+
+
+    document.addEventListener(
+        "mouseup",
+        stopResizeText
+    );
+
+}
+
+
+
+/* =========================================
+   RESIZE
+========================================= */
+
+function resizeText(
+    event
+) {
+
+    if (!resizeData) return;
+
+
+    const {
+        box,
+        startX,
+        startY,
+        startWidth,
+        startHeight
+    } = resizeData;
+
+
+    const newWidth =
+        Math.max(
+            40,
+            startWidth +
+            event.clientX -
+            startX
+        );
+
+
+    const newHeight =
+        Math.max(
+            25,
+            startHeight +
+            event.clientY -
+            startY
+        );
+
+
+    box.style.width =
+        newWidth + "px";
+
+
+    box.style.height =
+        newHeight + "px";
+
+}
+
+
+
+/* =========================================
+   STOP RESIZE
+========================================= */
+
+function stopResizeText() {
+
+    document.removeEventListener(
+        "mousemove",
+        resizeText
+    );
+
+
+    document.removeEventListener(
+        "mouseup",
+        stopResizeText
+    );
+
+
+    resizeData = null;
+
+}
+
+
+
+/* =========================================
+   DELETE TEXT
+========================================= */
+
+deleteTextBtn.addEventListener(
+    "click",
+    () => {
+
+        if (!selectedTextBox) {
+
+            alert(
+                "Please select a text box first."
+            );
+
+            return;
+
+        }
+
+
+        const page =
+            getPageData(
+                selectedTextBox
+            );
+
+
+        const index =
+            page.textBoxes.indexOf(
+                selectedTextBox
+            );
+
+
+        if (index !== -1) {
+
+            page.textBoxes.splice(
+                index,
+                1
+            );
+
+        }
+
+
+        selectedTextBox.remove();
+
+        selectedTextBox = null;
+
+    }
+);
+
+
+
+/* =========================================
+   COLOR TRANSPARENCY
+========================================= */
+
+function colorWithTransparency(
+    hex,
+    transparency
+) {
+
+    const r =
+        parseInt(
+            hex.substring(1,3),
+            16
+        );
+
+
+    const g =
+        parseInt(
+            hex.substring(3,5),
+            16
+        );
+
+
+    const b =
+        parseInt(
+            hex.substring(5,7),
+            16
+        );
+
+
+    const alpha =
+        1 -
+        transparency / 100;
+
+
+    return `rgba(${r},${g},${b},${alpha})`;
+
+}
+
+
+
+/* =========================================
+   UPDATE SELECTED TEXT
+========================================= */
+
+function updateSelectedText() {
+
+    if (!selectedTextBox) return;
+
+    applyTextStyle(
+        selectedTextBox
+    );
+
+}
+
+
+
+/* =========================================
+   TEXT SETTINGS
+========================================= */
+
+[
+    fontFamily,
+    fontSize,
+    textColor,
+    textTransparency,
+    textBackground,
+    textBackgroundTransparency,
+    boldText,
+    italicText,
+    underlineText,
+    textAlign
+]
+.forEach(control => {
+
+    control.addEventListener(
+        "input",
+        updateSelectedText
+    );
+
+    control.addEventListener(
+        "change",
+        updateSelectedText
+    );
+
+});
+
+
+
+/* =========================================
+   TRANSPARENCY VALUES
+========================================= */
+
+textTransparency.addEventListener(
+    "input",
+    () => {
+
+        textTransparencyValue.textContent =
+            textTransparency.value +
+            "%";
+
+    }
+);
+
+
+textBackgroundTransparency.addEventListener(
+    "input",
+    () => {
+
+        textBackgroundTransparencyValue.textContent =
+            textBackgroundTransparency.value +
+            "%";
+
+    }
+);
+
+
+highlightTransparency.addEventListener(
+    "input",
+    () => {
+
+        highlightTransparencyValue.textContent =
+            highlightTransparency.value +
+            "%";
+
+    }
+);
+
+
+
+/* =========================================
+   CANVAS EVENTS
+========================================= */
+
+function setupCanvasEvents(
+    pageData
+) {
+
+    const canvas =
+        pageData.drawCanvas;
+
+
+    canvas.addEventListener(
+        "mousedown",
+        startDrawing
+    );
+
+
+    canvas.addEventListener(
+        "mousemove",
+        drawMove
+    );
+
+
+    canvas.addEventListener(
+        "mouseup",
+        stopDrawing
+    );
+
+
+    canvas.addEventListener(
+        "mouseleave",
+        stopDrawing
+    );
+
+
+    function getPosition(
+        event
+    ) {
+
+        const rect =
+            canvas.getBoundingClientRect();
+
+
+        return {
+
+            x:
+                event.clientX -
+                rect.left,
+
+            y:
+                event.clientY -
+                rect.top
+
+        };
+
+    }
+
+
+    function startDrawing(
+        event
+    ) {
+
+        if (
+            currentTool ===
+            "select" ||
+
+            currentTool ===
+            "text"
+        ) {
+
+            return;
+
+        }
+
+
+        pageData.drawing =
+            true;
+
+
+        const pos =
+            getPosition(
+                event
+            );
+
+
+        pageData.startX =
+            pos.x;
+
+        pageData.startY =
+            pos.y;
+
+        pageData.lastX =
+            pos.x;
+
+        pageData.lastY =
+            pos.y;
+
+
+        saveCanvasState(
+            pageData
+        );
+
+    }
+
+
+
+    function drawMove(
+        event
+    ) {
+
+        if (
+            !pageData.drawing
+        ) return;
+
+
+        const pos =
+            getPosition(
+                event
+            );
+
+
+        const ctx =
+            pageData.ctx;
+
+
+        if (
+
+            currentTool === "draw" ||
+
+            currentTool === "eraser" ||
+
+            currentTool === "whiteout" ||
+
+            currentTool === "highlight"
+
+        ) {
+
+
+            let color =
+                drawColor.value;
+
+
+            let width =
+                Number(
+                    brushSize.value
+                );
+
+
+            let alpha = 1;
+
+
+            if (
+                currentTool ===
+                "eraser"
+            ) {
+
+                ctx.globalCompositeOperation =
+                    "destination-out";
+
+            }
+
+            else if (
+                currentTool ===
+                "whiteout"
+            ) {
+
+                ctx.globalCompositeOperation =
+                    "source-over";
+
+                color =
+                    "#ffffff";
+
+            }
+
+            else if (
+                currentTool ===
+                "highlight"
+            ) {
+
+                ctx.globalCompositeOperation =
+                    "source-over";
+
+                color =
+                    highlightColor.value;
+
+                width =
+                    Number(
+                        highlightThickness.value
+                    );
+
+                alpha =
+                    1 -
+                    Number(
+                        highlightTransparency.value
+                    ) / 100;
+
+            }
+
+            else {
+
+                ctx.globalCompositeOperation =
+                    "source-over";
+
+            }
+
+
+            ctx.strokeStyle =
+                color;
+
+
+            ctx.globalAlpha =
+                alpha;
+
+
+            ctx.lineWidth =
+                width;
+
+
+            ctx.lineCap =
+                "round";
+
+
+            ctx.lineJoin =
+                "round";
+
+
+            ctx.beginPath();
+
+
+            ctx.moveTo(
+                pageData.lastX,
+                pageData.lastY
+            );
+
+
+            ctx.lineTo(
+                pos.x,
+                pos.y
+            );
+
+
+            ctx.stroke();
+
+
+            pageData.lastX =
+                pos.x;
+
+
+            pageData.lastY =
+                pos.y;
+
+
+            ctx.globalAlpha =
+                1;
+
+
+            return;
+
+        }
+
+
+
+        /* SHAPES */
+
+        if (
+
+            currentTool === "line" ||
+
+            currentTool === "arrow" ||
+
+            currentTool === "rectangle" ||
+
+            currentTool === "circle"
+
+        ) {
+
+            redrawFromLastState(
+                pageData
+            );
+
+
+            const ctx =
+                pageData.ctx;
+
+
+            ctx.globalCompositeOperation =
+                "source-over";
+
+
+            ctx.strokeStyle =
+                drawColor.value;
+
+
+            ctx.lineWidth =
+                Number(
+                    brushSize.value
+                );
+
+
+            ctx.globalAlpha =
+                1;
+
+
+            const x =
+                pos.x;
+
+            const y =
+                pos.y;
+
+
+            const sx =
+                pageData.startX;
+
+            const sy =
+                pageData.startY;
+
+
+            if (
+                currentTool ===
+                "line"
+            ) {
+
+                drawLine(
+                    ctx,
+                    sx,
+                    sy,
+                    x,
+                    y
+                );
+
+            }
+
+
+            if (
+                currentTool ===
+                "arrow"
+            ) {
+
+                drawArrow(
+                    ctx,
+                    sx,
+                    sy,
+                    x,
+                    y
+                );
+
+            }
+
+
+            if (
+                currentTool ===
+                "rectangle"
+            ) {
+
+                ctx.strokeRect(
+                    sx,
+                    sy,
+                    x - sx,
+                    y - sy
+                );
+
+            }
+
+
+            if (
+                currentTool ===
+                "circle"
+            ) {
+
+                const radius =
+                    Math.sqrt(
+                        Math.pow(
+                            x - sx,
+                            2
+                        ) +
+                        Math.pow(
+                            y - sy,
+                            2
+                        )
+                    );
+
+
+                ctx.beginPath();
+
+
+                ctx.arc(
+                    sx,
+                    sy,
+                    radius,
+                    0,
+                    Math.PI * 2
+                );
+
+
+                ctx.stroke();
+
+            }
+
+        }
+
+    }
+
+
+
+    function stopDrawing() {
+
+        if (
+            !pageData.drawing
+        ) return;
+
+
+        pageData.drawing =
+            false;
+
+
+        pageData.ctx.globalAlpha =
+            1;
+
+
+        pageData.ctx.globalCompositeOperation =
+            "source-over";
+
+    }
+
+}
+
+
+
+/* =========================================
+   LINE
+========================================= */
+
+function drawLine(
+    ctx,
+    x1,
+    y1,
+    x2,
+    y2
+) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x1,
+        y1
+    );
+
+    ctx.lineTo(
+        x2,
+        y2
+    );
+
+    ctx.stroke();
+
+}
+
+
+
+/* =========================================
+   ARROW
+========================================= */
+
+function drawArrow(
+    ctx,
+    x1,
+    y1,
+    x2,
+    y2
+) {
+
+    const angle =
+        Math.atan2(
+            y2 - y1,
+            x2 - x1
+        );
+
+
+    const headLength =
+        12;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        x1,
+        y1
+    );
+
+    ctx.lineTo(
+        x2,
+        y2
+    );
+
+    ctx.stroke();
+
+
+    ctx.beginPath();
+
+
+    ctx.moveTo(
+        x2,
+        y2
+    );
+
+
+    ctx.lineTo(
+
+        x2 -
+        headLength *
+        Math.cos(
+            angle -
+            Math.PI / 6
+        ),
+
+        y2 -
+        headLength *
+        Math.sin(
+            angle -
+            Math.PI / 6
+        )
+
+    );
+
+
+    ctx.moveTo(
+        x2,
+        y2
+    );
+
+
+    ctx.lineTo(
+
+        x2 -
+        headLength *
+        Math.cos(
+            angle +
+            Math.PI / 6
+        ),
+
+        y2 -
+        headLength *
+        Math.sin(
+            angle +
+            Math.PI / 6
+        )
+
+    );
+
+
+    ctx.stroke();
+
+}
+
+
+
+/* =========================================
+   HISTORY
+========================================= */
+
+function saveCanvasState(
+    pageData
+) {
+
+    pageData.history.push(
+
+        pageData.ctx.getImageData(
+            0,
+            0,
+            pageData.drawCanvas.width,
+            pageData.drawCanvas.height
+        )
+
+    );
+
+
+    if (
+        pageData.history.length >
+        30
+    ) {
+
+        pageData.history.shift();
+
+    }
+
+
+    pageData.redoHistory = [];
+
+}
+
+
+
+/* =========================================
+   REDRAW
+========================================= */
+
+function redrawFromLastState(
+    pageData
+) {
+
+    const ctx =
+        pageData.ctx;
+
+
+    if (
+        pageData.history.length === 0
+    ) {
+
+        ctx.clearRect(
+            0,
+            0,
+            pageData.drawCanvas.width,
+            pageData.drawCanvas.height
+        );
+
+        return;
+
+    }
+
+
+    const state =
+        pageData.history[
+            pageData.history.length - 1
+        ];
+
+
+    ctx.putImageData(
+        state,
+        0,
+        0
+    );
+
+}
+
+
+
+/* =========================================
+   CURRENT PAGE
+========================================= */
+
+function getCurrentPage() {
+
+    if (
+        selectedTextBox
+    ) {
+
+        return getPageData(
+            selectedTextBox
+        );
+
+    }
+
+
+    if (
+        pages.length > 0
+    ) {
+
+        return pages[0];
+
+    }
+
+
+    return null;
+
+}
+
+
+
+/* =========================================
+   UNDO
+========================================= */
+
+undoBtn.addEventListener(
+    "click",
+    () => {
+
+        const page =
+            getCurrentPage();
+
+
+        if (!page) return;
+
+
+        if (
+            page.history.length <= 1
+        ) {
+
+            page.ctx.clearRect(
+                0,
+                0,
+                page.drawCanvas.width,
+                page.drawCanvas.height
+            );
+
+            return;
+
+        }
+
+
+        const current =
+            page.history.pop();
+
+
+        page.redoHistory.push(
+            current
+        );
+
+
+        const previous =
+            page.history[
+                page.history.length - 1
+            ];
+
+
+        page.ctx.putImageData(
+            previous,
+            0,
+            0
+        );
+
+    }
+);
+
+
+
+/* =========================================
+   REDO
+========================================= */
+
+redoBtn.addEventListener(
+    "click",
+    () => {
+
+        const page =
+            getCurrentPage();
+
+
+        if (!page) return;
+
+
+        if (
+            page.redoHistory.length === 0
+        ) {
+
+            return;
+
+        }
+
+
+        const state =
+            page.redoHistory.pop();
+
+
+        page.history.push(
+            state
+        );
+
+
+        page.ctx.putImageData(
+            state,
+            0,
+            0
+        );
+
+    }
+);
+
+
+
+/* =========================================
+   CLEAR PAGE
+========================================= */
+
+clearBtn.addEventListener(
+    "click",
+    () => {
+
+        const page =
+            getCurrentPage();
+
+
+        if (!page) return;
+
+
+        page.ctx.clearRect(
+            0,
+            0,
+            page.drawCanvas.width,
+            page.drawCanvas.height
+        );
+
+
+        page.textBoxes.forEach(
+            box => box.remove()
+        );
+
+
+        page.textBoxes = [];
+
+
+        selectedTextBox =
+            null;
+
+    }
+);
+
+
+
+/* =========================================
+   CREATE PAGE IMAGE
+   THIS IS THE IMPORTANT FONT FIX
+========================================= */
+
+async function createEditedPageImage(
+    pageData
+) {
+
+    /*
+       Create a temporary canvas
+       containing:
+
+       1. Original PDF page
+       2. Drawings
+       3. Actual browser-rendered text
+
+       Because the text is rendered by
+       the browser, the selected font
+       appearance is preserved.
+    */
+
+
+    const width =
+        pageData.canvas.width;
+
+
+    const height =
+        pageData.canvas.height;
+
+
+    const output =
+        document.createElement(
+            "canvas"
+        );
+
+
+    output.width =
+        width;
+
+    output.height =
+        height;
+
+
+    const ctx =
+        output.getContext(
+            "2d"
+        );
+
+
+    /* ORIGINAL PDF */
+
+    ctx.drawImage(
+        pageData.canvas,
+        0,
+        0
+    );
+
+
+    /* DRAWINGS */
+
+    ctx.drawImage(
+        pageData.drawCanvas,
+        0,
+        0
+    );
+
+
+    /*
+       Render every text box
+       using browser Canvas.
+    */
+
+    for (
+        const box of pageData.textBoxes
+    ) {
+
+        const text =
+            box.innerText
+            .replace(
+                /\nresize$/i,
+                ""
+            );
+
+
+        if (
+            !text.trim()
+        ) {
+
+            continue;
+
+        }
+
+
+        const style =
+            getComputedStyle(
+                box
+            );
+
+
+        const x =
+            parseFloat(
+                box.style.left
+            );
+
+
+        const y =
+            parseFloat(
+                box.style.top
+            );
+
+
+        const boxWidth =
+            box.offsetWidth;
+
+
+        const boxHeight =
+            box.offsetHeight;
+
+
+        /* BACKGROUND */
+
+        const bg =
+            parseRGBA(
+                style.backgroundColor
+            );
+
+
+        if (
+            bg &&
+            bg.alpha > 0
+        ) {
+
+            ctx.save();
+
+
+            ctx.fillStyle =
+                `rgba(
+                    ${bg.r},
+                    ${bg.g},
+                    ${bg.b},
+                    ${bg.alpha}
+                )`;
+
+
+            ctx.fillRect(
+                x,
+                y,
+                boxWidth,
+                boxHeight
+            );
+
+
+            ctx.restore();
+
+        }
+
+
+
+        /* TEXT */
+
+        const textColorData =
+            parseRGBA(
+                style.color
+            );
+
+
+        ctx.save();
+
+
+        ctx.fillStyle =
+            `rgba(
+                ${textColorData.r},
+                ${textColorData.g},
+                ${textColorData.b},
+                ${textColorData.alpha}
+            )`;
+
+
+        /*
+           IMPORTANT:
+           Use the exact browser
+           font family selected by user.
+        */
+
+        let fontStyle =
+            "";
+
+
+        if (
+            style.fontStyle ===
+            "italic"
+        ) {
+
+            fontStyle +=
+                "italic ";
+
+        }
+
+
+        let fontWeight =
+            style.fontWeight;
+
+
+        ctx.font =
+            `${fontStyle}${fontWeight} ${style.fontSize} ${style.fontFamily}`;
+
+
+        ctx.textAlign =
+            style.textAlign;
+
+
+        ctx.textBaseline =
+            "top";
+
+
+        const lineHeight =
+            parseFloat(
+                style.lineHeight
+            ) ||
+            parseFloat(
+                style.fontSize
+            ) * 1.2;
+
+
+        const lines =
+            text.split("\n");
+
+
+        let drawX;
+
+
+        if (
+            style.textAlign ===
+            "center"
+        ) {
+
+            drawX =
+                x +
+                boxWidth / 2;
+
+        }
+
+        else if (
+            style.textAlign ===
+            "right"
+        ) {
+
+            drawX =
+                x +
+                boxWidth;
+
+        }
+
+        else {
+
+            drawX =
+                x +
+                parseFloat(
+                    style.paddingLeft
+                );
+
+        }
+
+
+        lines.forEach(
+            (
+                line,
+                index
+            ) => {
+
+                const drawY =
+                    y +
+                    parseFloat(
+                        style.paddingTop
+                    ) +
+                    index *
+                    lineHeight;
+
+
+                ctx.fillText(
+                    line,
+                    drawX,
+                    drawY
+                );
+
+
+                /* UNDERLINE */
+
+                if (
+                    style.textDecoration
+                    .includes(
+                        "underline"
+                    )
+                ) {
+
+                    const metrics =
+                        ctx.measureText(
+                            line
+                        );
+
+
+                    let underlineX =
+                        drawX;
+
+
+                    if (
+                        style.textAlign ===
+                        "center"
+                    ) {
+
+                        underlineX =
+                            drawX -
+                            metrics.width / 2;
+
+                    }
+
+                    else if (
+                        style.textAlign ===
+                        "right"
+                    ) {
+
+                        underlineX =
+                            drawX -
+                            metrics.width;
+
+                    }
+
+
+                    ctx.beginPath();
+
+
+                    ctx.lineWidth =
+                        Math.max(
+                            1,
+                            parseFloat(
+                                style.fontSize
+                            ) / 15
+                        );
+
+
+                    ctx.moveTo(
+                        underlineX,
+                        drawY +
+                        parseFloat(
+                            style.fontSize
+                        )
+                    );
+
+
+                    ctx.lineTo(
+                        underlineX +
+                        metrics.width,
+                        drawY +
+                        parseFloat(
+                            style.fontSize
+                        )
+                    );
+
+
+                    ctx.strokeStyle =
+                        `rgba(
+                            ${textColorData.r},
+                            ${textColorData.g},
+                            ${textColorData.b},
+                            ${textColorData.alpha}
+                        )`;
+
+
+                    ctx.stroke();
+
+                }
+
+            }
+        );
+
+
+        ctx.restore();
+
+    }
+
+
+    return output.toDataURL(
+        "image/png"
+    );
+
+}
+
+
+
+/* =========================================
+   SAVE PDF
+========================================= */
+
+saveBtn.addEventListener(
+    "click",
+    async () => {
+
+        if (!pdfBytes) {
+
+            alert(
+                "Please upload a PDF first."
+            );
+
+            return;
+
+        }
+
+
+        saveBtn.disabled =
+            true;
+
+
+        saveBtn.textContent =
+            "Saving...";
+
+
+        try {
+
+
+            const pdf =
+                await PDFDocument.load(
+                    pdfBytes
+                );
+
+
+            /*
+               IMPORTANT:
+
+               We now render the whole
+               edited page to PNG.
+
+               This preserves the actual
+               browser font selected by user.
+            */
+
+
+            for (
+                let i = 0;
+                i < pages.length;
+                i++
+            ) {
+
+
+                const pageData =
+                    pages[i];
+
+
+                const pdfPage =
+                    pdf.getPage(i);
+
+
+                const imageData =
+                    await createEditedPageImage(
+                        pageData
+                    );
+
+
+                const png =
+                    await pdf.embedPng(
+                        imageData
+                    );
+
+
+                const pdfWidth =
+                    pdfPage.getWidth();
+
+
+                const pdfHeight =
+                    pdfPage.getHeight();
+
+
+                pdfPage.drawImage(
+                    png,
+                    {
+
+                        x: 0,
+
+                        y: 0,
+
+                        width:
+                            pdfWidth,
+
+                        height:
+                            pdfHeight
+
+                    }
+                );
+
+            }
+
+
+            const finalBytes =
+                await pdf.save();
+
+
+            const blob =
+                new Blob(
+                    [finalBytes],
+                    {
+                        type:
+                            "application/pdf"
+                    }
+                );
+
+
+            const url =
+                URL.createObjectURL(
+                    blob
+                );
+
+
+            const link =
+                document.createElement(
+                    "a"
+                );
+
+
+            link.href =
+                url;
+
+
+            link.download =
+                "edited.pdf";
+
+
+            document.body.appendChild(
+                link
+            );
+
+
+            link.click();
+
+
+            link.remove();
+
+
+            URL.revokeObjectURL(
+                url
+            );
+
+
+        }
+
+        catch (error) {
+
+            console.error(
+                error
+            );
+
+
+            alert(
+                "Could not save the PDF. Please try again."
+            );
+
+        }
+
+
+        saveBtn.disabled =
+            false;
+
+
+        saveBtn.textContent =
+            "Save PDF";
+
+    }
+);
+
+
+
+/* =========================================
+   PARSE RGBA
+========================================= */
+
+function parseRGBA(
+    value
+) {
+
+    if (!value) {
+
+        return {
+
+            r: 0,
+
+            g: 0,
+
+            b: 0,
+
+            alpha: 0
+
+        };
+
+    }
+
+
+    const match =
+        value.match(
+            /rgba?\(([^)]+)\)/
+        );
+
+
+    if (!match) {
+
+        return {
+
+            r: 0,
+
+            g: 0,
+
+            b: 0,
+
+            alpha: 0
+
+        };
+
+    }
+
+
+    const parts =
+        match[1]
+        .split(",")
+        .map(
+            x => x.trim()
+        );
+
+
+    return {
+
+        r:
+            Number(parts[0]),
+
+        g:
+            Number(parts[1]),
+
+        b:
+            Number(parts[2]),
+
+        alpha:
+            parts[3] !== undefined
+            ? Number(parts[3])
+            : 1
+
+    };
+
+}
+
+</script>
+
+</body>
+</html>
+```

@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>MyPDFTools - Split PDF</title>
+
+    <link
+        rel="stylesheet"
+        href="css/style.css"
+    >
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div class="header-container">
+
+        <div class="logo">
+            MyPDF<span>Tools</span>
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<main>
+
+
+    <section class="hero">
+
+        <h1>
+            Split PDF Files
+        </h1>
+
+        <p>
+            Extract selected pages from your PDF and create a new PDF.
+        </p>
+
+    </section>
+
+
+
+    <section class="tools-section">
+
+        <div class="tool-card">
+
+            <h2>
+                Select Your PDF
+            </h2>
+
+            <p>
+                Choose one PDF file to split.
+            </p>
+
+
+            <input
+                type="file"
+                id="pdfFile"
+                accept=".pdf,application/pdf"
+            >
+
+
+            <br><br>
+
+
+            <label for="pageRange">
+                Pages to extract:
+            </label>
+
+
+            <br><br>
+
+
+            <input
+                type="text"
+                id="pageRange"
+                placeholder="Example: 1-3 or 1,3,5"
+            >
+
+
+            <br><br>
+
+
+            <button
+                class="tool-button"
+                id="splitButton"
+            >
+                Split PDF
+            </button>
+
+
+            <p id="status"></p>
+
+        </div>
+
+    </section>
+
+
+</main>
+
+
+
+<footer>
+
+    © 2026 MyPDFTools. All rights reserved.
+
+</footer>
+
+
+
+<!-- PDF-LIB -->
+
+<script src="node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
+
+
+
+<script>
+
+    const pdfFile =
+        document.getElementById("pdfFile");
+
+    const pageRange =
+        document.getElementById("pageRange");
+
+    const splitButton =
+        document.getElementById("splitButton");
+
+    const status =
+        document.getElementById("status");
+
+
+
+    splitButton.addEventListener(
+        "click",
+        splitPDF
+    );
+
+
+
+    async function splitPDF() {
+
+        const file =
+            pdfFile.files[0];
+
+        const range =
+            pageRange.value.trim();
+
+
+
+        if (!file) {
+
+            status.textContent =
+                "Please select a PDF file.";
+
+            return;
+
+        }
+
+
+
+        if (!range) {
+
+            status.textContent =
+                "Please enter the page numbers.";
+
+            return;
+
+        }
+
+
+
+        try {
+
+            splitButton.disabled = true;
+
+            status.textContent =
+                "Reading PDF...";
+
+
+
+            const fileBytes =
+                await file.arrayBuffer();
+
+
+
+            const sourcePdf =
+                await PDFLib.PDFDocument.load(
+                    fileBytes
+                );
+
+
+
+            const totalPages =
+                sourcePdf.getPageCount();
+
+
+
+            const pageIndexes =
+                parsePageRange(
+                    range,
+                    totalPages
+                );
+
+
+
+            if (pageIndexes.length === 0) {
+
+                status.textContent =
+                    "No valid pages were selected. This PDF has " +
+                    totalPages +
+                    " page(s).";
+
+                splitButton.disabled = false;
+
+                return;
+
+            }
+
+
+
+            status.textContent =
+                "Creating new PDF...";
+
+
+
+            const newPdf =
+                await PDFLib.PDFDocument.create();
+
+
+
+            const copiedPages =
+                await newPdf.copyPages(
+                    sourcePdf,
+                    pageIndexes
+                );
+
+
+
+            copiedPages.forEach(
+                function(page) {
+
+                    newPdf.addPage(page);
+
+                }
+            );
+
+
+
+            const pdfBytes =
+                await newPdf.save();
+
+
+
+            const blob =
+                new Blob(
+                    [pdfBytes],
+                    {
+                        type: "application/pdf"
+                    }
+                );
+
+
+
+            const url =
+                URL.createObjectURL(blob);
+
+
+
+            const link =
+                document.createElement("a");
+
+
+
+            link.href = url;
+
+            link.download =
+                "split-pages.pdf";
+
+
+
+            document.body.appendChild(link);
+
+            link.click();
+
+            link.remove();
+
+
+
+            setTimeout(
+                function() {
+
+                    URL.revokeObjectURL(url);
+
+                },
+                1000
+            );
+
+
+
+            status.textContent =
+                "PDF split successfully! " +
+                pageIndexes.length +
+                " page(s) extracted.";
+
+        }
+
+
+        catch (error) {
+
+            console.error(
+                "Split PDF error:",
+                error
+            );
+
+
+            status.textContent =
+                "Error: Unable to split this PDF. " +
+                "Please make sure the PDF is valid.";
+
+        }
+
+
+        finally {
+
+            splitButton.disabled = false;
+
+        }
+
+    }
+
+
+
+    function parsePageRange(
+        range,
+        totalPages
+    ) {
+
+        const pages = [];
+
+        const parts =
+            range.split(",");
+
+
+
+        parts.forEach(
+            function(part) {
+
+                part =
+                    part.trim();
+
+
+
+                if (!part) {
+
+                    return;
+
+                }
+
+
+
+                if (part.includes("-")) {
+
+                    const numbers =
+                        part.split("-");
+
+
+
+                    if (numbers.length !== 2) {
+
+                        return;
+
+                    }
+
+
+
+                    let start =
+                        parseInt(
+                            numbers[0].trim(),
+                            10
+                        );
+
+
+                    let end =
+                        parseInt(
+                            numbers[1].trim(),
+                            10
+                        );
+
+
+
+                    if (
+                        isNaN(start) ||
+                        isNaN(end)
+                    ) {
+
+                        return;
+
+                    }
+
+
+
+                    if (start > end) {
+
+                        const temporary =
+                            start;
+
+                        start =
+                            end;
+
+                        end =
+                            temporary;
+
+                    }
+
+
+
+                    for (
+                        let page = start;
+                        page <= end;
+                        page++
+                    ) {
+
+                        if (
+                            page >= 1 &&
+                            page <= totalPages
+                        ) {
+
+                            pages.push(
+                                page - 1
+                            );
+
+                        }
+
+                    }
+
+                }
+
+
+                else {
+
+                    const page =
+                        parseInt(
+                            part,
+                            10
+                        );
+
+
+
+                    if (
+                        !isNaN(page) &&
+                        page >= 1 &&
+                        page <= totalPages
+                    ) {
+
+                        pages.push(
+                            page - 1
+                        );
+
+                    }
+
+                }
+
+            }
+        );
+
+
+
+        return [
+            ...new Set(pages)
+        ];
+
+    }
+
+</script>
+
+
+</body>
+
+</html>
