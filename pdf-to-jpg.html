@@ -1,280 +1,289 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to JPG - MyPDFTools</title>
 
-    <title>MyPDFTools - PDF to JPG</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    <link rel="stylesheet" href="css/style.css">
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
 
+        .header {
+            background: #111827;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 45px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .upload-area {
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            padding: 35px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: #f8fafc;
+        }
+
+        .upload-area input {
+            margin-top: 15px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #convertBtn {
+            background: #2563eb;
+            color: white;
+        }
+
+        #clearBtn {
+            background: #64748b;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+    </style>
 </head>
-
 
 <body>
 
-
-<header>
-
-    <div class="header-container">
-
-        <div class="logo">
-            MyPDF<span>Tools</span>
-        </div>
-
+    <div class="header">
+        <h1>PDF to JPG</h1>
+        <p>Convert PDF pages into JPG images</p>
     </div>
 
-</header>
+    <div class="container">
+        <div class="card">
 
+            <div class="upload-area">
+                <h2>Select PDF File</h2>
+                <p>Choose the PDF you want to convert into JPG images.</p>
 
+                <input
+                    type="file"
+                    id="pdfFile"
+                    accept=".pdf,application/pdf"
+                >
+            </div>
 
-<main>
+            <div class="buttons">
+                <button id="convertBtn">Convert to JPG</button>
+                <button id="clearBtn">Clear</button>
+            </div>
 
-    <section class="hero">
+            <div id="status"></div>
 
-        <h1>
-            PDF to JPG
-        </h1>
-
-        <p>
-            Convert every page of a PDF into a high-quality JPG image.
-        </p>
-
-    </section>
-
-
-
-    <section class="tools-section">
-
-        <div class="tool-card">
-
-            <h2>
-                Select PDF
-            </h2>
-
-            <p>
-                Choose a PDF file to convert.
-            </p>
-
-
-            <input
-                type="file"
-                id="pdfFile"
-                accept=".pdf,application/pdf"
-            >
-
-
-            <br><br>
-
-
-            <button
-                class="tool-button"
-                onclick="convertPDFToJPG()">
-
-                Convert to JPG
-
-            </button>
-
-
-            <p id="status"></p>
-
-
-            <div id="downloads"></div>
+            <a href="index.html" class="back">
+                ← Back to MyPDFTools
+            </a>
 
         </div>
+    </div>
 
-    </section>
+    <!-- PDF.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs" type="module"></script>
 
-</main>
+    <script type="module">
 
+        import * as pdfjsLib from
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.min.mjs";
 
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs";
 
-<footer>
+        const pdfFile =
+            document.getElementById("pdfFile");
 
-    © 2026 MyPDFTools. All rights reserved.
+        const convertBtn =
+            document.getElementById("convertBtn");
 
-</footer>
+        const clearBtn =
+            document.getElementById("clearBtn");
 
+        const status =
+            document.getElementById("status");
 
+        convertBtn.addEventListener(
+            "click",
+            async function () {
 
-<script type="module">
+                if (!pdfFile.files.length) {
 
-import * as pdfjsLib from "./node_modules/pdfjs-dist/build/pdf.mjs";
+                    status.textContent =
+                        "Please select a PDF file.";
 
+                    return;
+                }
 
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-    "./node_modules/pdfjs-dist/build/pdf.worker.mjs";
+                try {
 
+                    status.textContent =
+                        "Converting PDF pages...";
 
-window.convertPDFToJPG = async function () {
+                    const file =
+                        pdfFile.files[0];
 
-    const fileInput =
-        document.getElementById("pdfFile");
+                    const arrayBuffer =
+                        await file.arrayBuffer();
 
-    const status =
-        document.getElementById("status");
+                    const pdf =
+                        await pdfjsLib.getDocument({
+                            data: arrayBuffer
+                        }).promise;
 
-    const downloads =
-        document.getElementById("downloads");
+                    for (
+                        let pageNumber = 1;
+                        pageNumber <= pdf.numPages;
+                        pageNumber++
+                    ) {
 
+                        const page =
+                            await pdf.getPage(pageNumber);
 
-    const file =
-        fileInput.files[0];
+                        const scale = 2;
 
+                        const viewport =
+                            page.getViewport({
+                                scale: scale
+                            });
 
-    if (!file) {
+                        const canvas =
+                            document.createElement("canvas");
 
-        status.textContent =
-            "Please select a PDF file.";
+                        const context =
+                            canvas.getContext("2d");
 
-        return;
-    }
+                        canvas.width =
+                            viewport.width;
 
+                        canvas.height =
+                            viewport.height;
 
-    status.textContent =
-        "Loading PDF...";
+                        await page.render({
+                            canvasContext: context,
+                            viewport: viewport
+                        }).promise;
 
+                        const blob =
+                            await new Promise(
+                                resolve =>
+                                    canvas.toBlob(
+                                        resolve,
+                                        "image/jpeg",
+                                        0.95
+                                    )
+                            );
 
-    downloads.innerHTML = "";
+                        const url =
+                            URL.createObjectURL(blob);
 
+                        const link =
+                            document.createElement("a");
 
-    try {
+                        link.href = url;
 
-        const arrayBuffer =
-            await file.arrayBuffer();
+                        link.download =
+                            `page-${pageNumber}.jpg`;
 
+                        document.body.appendChild(link);
 
-        const pdf =
-            await pdfjsLib.getDocument({
-                data: arrayBuffer
-            }).promise;
+                        link.click();
 
+                        link.remove();
 
-        status.textContent =
-            "PDF loaded. Converting pages...";
+                        URL.revokeObjectURL(url);
 
+                        await new Promise(
+                            resolve =>
+                                setTimeout(resolve, 150)
+                        );
+                    }
 
-        for (
-            let pageNumber = 1;
-            pageNumber <= pdf.numPages;
-            pageNumber++
-        ) {
+                    status.textContent =
+                        `Successfully converted ${pdf.numPages} page(s) to JPG.`;
 
+                } catch (error) {
 
-            status.textContent =
-                "Converting page " +
-                pageNumber +
-                " of " +
-                pdf.numPages +
-                "...";
+                    console.error(error);
 
+                    status.textContent =
+                        "Error converting PDF. Please try again.";
+                }
+            }
+        );
 
-            const page =
-                await pdf.getPage(pageNumber);
+        clearBtn.addEventListener(
+            "click",
+            function () {
 
+                pdfFile.value = "";
 
-            const scale = 2;
+                status.textContent = "";
 
+            }
+        );
 
-            const viewport =
-                page.getViewport({
-                    scale: scale
-                });
-
-
-            const canvas =
-                document.createElement("canvas");
-
-
-            const context =
-                canvas.getContext("2d");
-
-
-            canvas.width =
-                viewport.width;
-
-
-            canvas.height =
-                viewport.height;
-
-
-            await page.render({
-
-                canvasContext:
-                    context,
-
-                viewport:
-                    viewport
-
-            }).promise;
-
-
-            const jpgData =
-                canvas.toDataURL(
-                    "image/jpeg",
-                    0.92
-                );
-
-
-            const link =
-                document.createElement("a");
-
-
-            link.href =
-                jpgData;
-
-
-            link.download =
-                "page-" +
-                pageNumber +
-                ".jpg";
-
-
-            link.textContent =
-                "Download Page " +
-                pageNumber;
-
-
-            link.className =
-                "tool-button";
-
-
-            link.style.margin =
-                "5px";
-
-
-            downloads.appendChild(link);
-
-
-            downloads.appendChild(
-                document.createElement("br")
-            );
-
-        }
-
-
-        status.textContent =
-            "Conversion completed successfully!";
-
-
-    } catch (error) {
-
-        console.error(error);
-
-
-        status.textContent =
-            "Something went wrong while converting the PDF.";
-
-    }
-
-};
-
-</script>
-
+    </script>
 
 </body>
-
 </html>
