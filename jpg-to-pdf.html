@@ -1,259 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JPG to PDF - MyPDFTools</title>
 
-    <title>MyPDFTools - JPG to PDF</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    <link rel="stylesheet" href="css/style.css">
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
 
+        .header {
+            background: #111827;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 45px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .upload-area {
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            padding: 35px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: #f8fafc;
+        }
+
+        .upload-area input {
+            margin-top: 15px;
+        }
+
+        .file-list {
+            margin: 20px 0;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f1f5f9;
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+        }
+
+        .remove-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #convertBtn {
+            background: #2563eb;
+            color: white;
+        }
+
+        #clearBtn {
+            background: #64748b;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
 
-<header>
-
-    <div class="header-container">
-
-        <div class="logo">
-            MyPDF<span>Tools</span>
-        </div>
-
+    <div class="header">
+        <h1>JPG to PDF</h1>
+        <p>Convert JPG and PNG images into a PDF</p>
     </div>
 
-</header>
+    <div class="container">
+        <div class="card">
 
+            <div class="upload-area">
+                <h2>Select Images</h2>
+                <p>You can select multiple JPG or PNG images.</p>
+                <input
+                    type="file"
+                    id="imageFiles"
+                    accept="image/jpeg,image/png"
+                    multiple
+                >
+            </div>
 
-<main>
+            <div id="fileList" class="file-list"></div>
 
-    <section class="hero">
+            <div class="buttons">
+                <button id="convertBtn">Convert to PDF</button>
+                <button id="clearBtn">Clear</button>
+            </div>
 
-        <h1>
-            JPG to PDF
-        </h1>
+            <div id="status"></div>
 
-        <p>
-            Convert multiple images into one PDF document.
-        </p>
-
-    </section>
-
-
-    <section class="tools-section">
-
-        <div class="tool-card">
-
-            <h2>
-                Select Images
-            </h2>
-
-            <p>
-                Select one or more JPG or PNG images.
-            </p>
-
-
-            <input
-                type="file"
-                id="imageFiles"
-                accept="image/jpeg,image/png"
-                multiple
-            >
-
-
-            <br><br>
-
-
-            <button
-                class="tool-button"
-                onclick="convertToPDF()">
-
-                Convert to PDF
-
-            </button>
-
-
-            <p id="status"></p>
+            <a href="index.html" class="back">← Back to MyPDFTools</a>
 
         </div>
+    </div>
 
-    </section>
+    <!-- PDF-LIB from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
-</main>
+    <script>
+        const imageFiles = document.getElementById("imageFiles");
+        const fileList = document.getElementById("fileList");
+        const convertBtn = document.getElementById("convertBtn");
+        const clearBtn = document.getElementById("clearBtn");
+        const status = document.getElementById("status");
 
+        let selectedFiles = [];
 
-<footer>
+        imageFiles.addEventListener("change", function () {
+            selectedFiles = Array.from(imageFiles.files);
+            displayFiles();
+        });
 
-    © 2026 MyPDFTools. All rights reserved.
+        function displayFiles() {
 
-</footer>
+            fileList.innerHTML = "";
 
+            selectedFiles.forEach((file, index) => {
 
-<script src="node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
+                const item = document.createElement("div");
+                item.className = "file-item";
 
+                item.innerHTML = `
+                    <span>${index + 1}. ${file.name}</span>
+                    <button
+                        class="remove-btn"
+                        onclick="removeFile(${index})"
+                    >
+                        Remove
+                    </button>
+                `;
 
-<script>
-
-async function convertToPDF() {
-
-    const input =
-        document.getElementById("imageFiles");
-
-    const status =
-        document.getElementById("status");
-
-    const files =
-        input.files;
-
-
-    if (files.length === 0) {
-
-        status.textContent =
-            "Please select at least one image.";
-
-        return;
-    }
-
-
-    status.textContent =
-        "Creating PDF...";
-
-
-    try {
-
-        const pdfDoc =
-            await PDFLib.PDFDocument.create();
-
-
-        for (const file of files) {
-
-            const imageBytes =
-                await file.arrayBuffer();
-
-
-            let image;
-
-
-            if (file.type === "image/jpeg") {
-
-                image =
-                    await pdfDoc.embedJpg(imageBytes);
-
-            } else if (file.type === "image/png") {
-
-                image =
-                    await pdfDoc.embedPng(imageBytes);
-
-            } else {
-
-                continue;
-
-            }
-
-
-            const imageWidth =
-                image.width;
-
-            const imageHeight =
-                image.height;
-
-
-            const pageWidth = 595;
-
-            const pageHeight = 842;
-
-
-            const scale =
-                Math.min(
-                    pageWidth / imageWidth,
-                    pageHeight / imageHeight
-                );
-
-
-            const width =
-                imageWidth * scale;
-
-            const height =
-                imageHeight * scale;
-
-
-            const page =
-                pdfDoc.addPage(
-                    [pageWidth, pageHeight]
-                );
-
-
-            page.drawImage(image, {
-
-                x:
-                    (pageWidth - width) / 2,
-
-                y:
-                    (pageHeight - height) / 2,
-
-                width:
-                    width,
-
-                height:
-                    height
-
+                fileList.appendChild(item);
             });
-
         }
 
+        function removeFile(index) {
 
-        const pdfBytes =
-            await pdfDoc.save();
+            selectedFiles.splice(index, 1);
+            displayFiles();
+        }
 
+        clearBtn.addEventListener("click", function () {
 
-        const blob =
-            new Blob(
-                [pdfBytes],
-                { type: "application/pdf" }
-            );
+            selectedFiles = [];
+            imageFiles.value = "";
+            fileList.innerHTML = "";
+            status.textContent = "";
 
+        });
 
-        const url =
-            URL.createObjectURL(blob);
+        function loadImage(file) {
 
+            return new Promise((resolve, reject) => {
 
-        const link =
-            document.createElement("a");
+                const reader = new FileReader();
 
+                reader.onload = function (event) {
 
-        link.href = url;
+                    const img = new Image();
 
-        link.download =
-            "images.pdf";
+                    img.onload = function () {
+                        resolve(img);
+                    };
 
+                    img.onerror = reject;
 
-        link.click();
+                    img.src = event.target.result;
+                };
 
+                reader.onerror = reject;
 
-        URL.revokeObjectURL(url);
+                reader.readAsDataURL(file);
+            });
+        }
 
+        convertBtn.addEventListener("click", async function () {
 
-        status.textContent =
-            "PDF created successfully!";
+            if (selectedFiles.length === 0) {
 
+                status.textContent =
+                    "Please select at least one image.";
 
-    } catch (error) {
+                return;
+            }
 
-        console.error(error);
+            try {
 
-        status.textContent =
-            "Something went wrong while creating the PDF.";
+                status.textContent =
+                    "Creating PDF...";
 
-    }
+                const pdf =
+                    await PDFLib.PDFDocument.create();
 
-}
+                for (const file of selectedFiles) {
 
-</script>
+                    const img =
+                        await loadImage(file);
 
+                    const canvas =
+                        document.createElement("canvas");
+
+                    const maxWidth = 550;
+                    const maxHeight = 780;
+
+                    let width = img.width;
+                    let height = img.height;
+
+                    const scale =
+                        Math.min(
+                            maxWidth / width,
+                            maxHeight / height,
+                            1
+                        );
+
+                    width *= scale;
+                    height *= scale;
+
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    const ctx =
+                        canvas.getContext("2d");
+
+                    ctx.drawImage(
+                        img,
+                        0,
+                        0,
+                        width,
+                        height
+                    );
+
+                    const dataUrl =
+                        canvas.toDataURL(
+                            "image/jpeg",
+                            0.95
+                        );
+
+                    const imageBytes =
+                        await fetch(dataUrl)
+                            .then(response =>
+                                response.arrayBuffer()
+                            );
+
+                    const embeddedImage =
+                        await pdf.embedJpg(imageBytes);
+
+                    const page =
+                        pdf.addPage([595, 842]);
+
+                    const pageWidth =
+                        page.getWidth();
+
+                    const pageHeight =
+                        page.getHeight();
+
+                    const scaleToPage =
+                        Math.min(
+                            (pageWidth - 40) / embeddedImage.width,
+                            (pageHeight - 40) / embeddedImage.height
+                        );
+
+                    const drawWidth =
+                        embeddedImage.width *
+                        scaleToPage;
+
+                    const drawHeight =
+                        embeddedImage.height *
+                        scaleToPage;
+
+                    page.drawImage(
+                        embeddedImage,
+                        {
+                            x: (pageWidth - drawWidth) / 2,
+                            y: (pageHeight - drawHeight) / 2,
+                            width: drawWidth,
+                            height: drawHeight
+                        }
+                    );
+                }
+
+                const pdfBytes =
+                    await pdf.save();
+
+                const blob =
+                    new Blob(
+                        [pdfBytes],
+                        { type: "application/pdf" }
+                    );
+
+                const url =
+                    URL.createObjectURL(blob);
+
+                const link =
+                    document.createElement("a");
+
+                link.href = url;
+                link.download = "images.pdf";
+
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                URL.revokeObjectURL(url);
+
+                status.textContent =
+                    "PDF created successfully!";
+
+            } catch (error) {
+
+                console.error(error);
+
+                status.textContent =
+                    "Error creating PDF. Please try again.";
+            }
+        });
+    </script>
 
 </body>
-
 </html>
