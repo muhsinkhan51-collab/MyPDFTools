@@ -1,493 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Split PDF - MyPDFTools</title>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <style>
+        * {
+            box-sizing: border-box;
+        }
 
-    <title>MyPDFTools - Split PDF</title>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
 
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
+        .header {
+            background: #111827;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
 
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        .header p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 45px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .upload-area {
+            border: 2px dashed #94a3b8;
+            border-radius: 12px;
+            padding: 35px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: #f8fafc;
+        }
+
+        .upload-area input {
+            margin-top: 15px;
+        }
+
+        label {
+            display: block;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #splitBtn {
+            background: #2563eb;
+            color: white;
+        }
+
+        #clearBtn {
+            background: #64748b;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            text-decoration: none;
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .hint {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+    </style>
 </head>
-
 
 <body>
 
-
-<header>
-
-    <div class="header-container">
-
-        <div class="logo">
-            MyPDF<span>Tools</span>
-        </div>
-
+    <div class="header">
+        <h1>Split PDF</h1>
+        <p>Extract selected pages from a PDF file</p>
     </div>
 
-</header>
+    <div class="container">
+        <div class="card">
 
+            <div class="upload-area">
+                <h2>Select a PDF File</h2>
+                <p>Choose the PDF you want to split.</p>
+                <input type="file" id="pdfFile" accept=".pdf,application/pdf">
+            </div>
 
-
-<main>
-
-
-    <section class="hero">
-
-        <h1>
-            Split PDF Files
-        </h1>
-
-        <p>
-            Extract selected pages from your PDF and create a new PDF.
-        </p>
-
-    </section>
-
-
-
-    <section class="tools-section">
-
-        <div class="tool-card">
-
-            <h2>
-                Select Your PDF
-            </h2>
-
-            <p>
-                Choose one PDF file to split.
-            </p>
-
-
-            <input
-                type="file"
-                id="pdfFile"
-                accept=".pdf,application/pdf"
-            >
-
-
-            <br><br>
-
-
-            <label for="pageRange">
-                Pages to extract:
-            </label>
-
-
-            <br><br>
-
+            <label for="pageRange">Pages to extract</label>
 
             <input
                 type="text"
                 id="pageRange"
-                placeholder="Example: 1-3 or 1,3,5"
+                placeholder="Example: 1-3,5,7-9"
             >
 
+            <div class="hint">
+                Use page numbers, ranges, or both. Example: 1-3,5,8-10
+            </div>
 
-            <br><br>
+            <div class="buttons">
+                <button id="splitBtn">Split PDF</button>
+                <button id="clearBtn">Clear</button>
+            </div>
 
+            <div id="status"></div>
 
-            <button
-                class="tool-button"
-                id="splitButton"
-            >
-                Split PDF
-            </button>
-
-
-            <p id="status"></p>
+            <a href="index.html" class="back">← Back to MyPDFTools</a>
 
         </div>
+    </div>
 
-    </section>
+    <!-- PDF-LIB from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
+    <script>
+        const pdfFile = document.getElementById("pdfFile");
+        const pageRange = document.getElementById("pageRange");
+        const splitBtn = document.getElementById("splitBtn");
+        const clearBtn = document.getElementById("clearBtn");
+        const status = document.getElementById("status");
 
-</main>
+        function parsePageRange(rangeText, totalPages) {
 
+            const pages = new Set();
 
+            const parts = rangeText
+                .split(",")
+                .map(part => part.trim())
+                .filter(Boolean);
 
-<footer>
-
-    © 2026 MyPDFTools. All rights reserved.
-
-</footer>
-
-
-
-<!-- PDF-LIB -->
-
-<script src="node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
-
-
-
-<script>
-
-    const pdfFile =
-        document.getElementById("pdfFile");
-
-    const pageRange =
-        document.getElementById("pageRange");
-
-    const splitButton =
-        document.getElementById("splitButton");
-
-    const status =
-        document.getElementById("status");
-
-
-
-    splitButton.addEventListener(
-        "click",
-        splitPDF
-    );
-
-
-
-    async function splitPDF() {
-
-        const file =
-            pdfFile.files[0];
-
-        const range =
-            pageRange.value.trim();
-
-
-
-        if (!file) {
-
-            status.textContent =
-                "Please select a PDF file.";
-
-            return;
-
-        }
-
-
-
-        if (!range) {
-
-            status.textContent =
-                "Please enter the page numbers.";
-
-            return;
-
-        }
-
-
-
-        try {
-
-            splitButton.disabled = true;
-
-            status.textContent =
-                "Reading PDF...";
-
-
-
-            const fileBytes =
-                await file.arrayBuffer();
-
-
-
-            const sourcePdf =
-                await PDFLib.PDFDocument.load(
-                    fileBytes
-                );
-
-
-
-            const totalPages =
-                sourcePdf.getPageCount();
-
-
-
-            const pageIndexes =
-                parsePageRange(
-                    range,
-                    totalPages
-                );
-
-
-
-            if (pageIndexes.length === 0) {
-
-                status.textContent =
-                    "No valid pages were selected. This PDF has " +
-                    totalPages +
-                    " page(s).";
-
-                splitButton.disabled = false;
-
-                return;
-
-            }
-
-
-
-            status.textContent =
-                "Creating new PDF...";
-
-
-
-            const newPdf =
-                await PDFLib.PDFDocument.create();
-
-
-
-            const copiedPages =
-                await newPdf.copyPages(
-                    sourcePdf,
-                    pageIndexes
-                );
-
-
-
-            copiedPages.forEach(
-                function(page) {
-
-                    newPdf.addPage(page);
-
-                }
-            );
-
-
-
-            const pdfBytes =
-                await newPdf.save();
-
-
-
-            const blob =
-                new Blob(
-                    [pdfBytes],
-                    {
-                        type: "application/pdf"
-                    }
-                );
-
-
-
-            const url =
-                URL.createObjectURL(blob);
-
-
-
-            const link =
-                document.createElement("a");
-
-
-
-            link.href = url;
-
-            link.download =
-                "split-pages.pdf";
-
-
-
-            document.body.appendChild(link);
-
-            link.click();
-
-            link.remove();
-
-
-
-            setTimeout(
-                function() {
-
-                    URL.revokeObjectURL(url);
-
-                },
-                1000
-            );
-
-
-
-            status.textContent =
-                "PDF split successfully! " +
-                pageIndexes.length +
-                " page(s) extracted.";
-
-        }
-
-
-        catch (error) {
-
-            console.error(
-                "Split PDF error:",
-                error
-            );
-
-
-            status.textContent =
-                "Error: Unable to split this PDF. " +
-                "Please make sure the PDF is valid.";
-
-        }
-
-
-        finally {
-
-            splitButton.disabled = false;
-
-        }
-
-    }
-
-
-
-    function parsePageRange(
-        range,
-        totalPages
-    ) {
-
-        const pages = [];
-
-        const parts =
-            range.split(",");
-
-
-
-        parts.forEach(
-            function(part) {
-
-                part =
-                    part.trim();
-
-
-
-                if (!part) {
-
-                    return;
-
-                }
-
-
+            for (const part of parts) {
 
                 if (part.includes("-")) {
 
-                    const numbers =
-                        part.split("-");
+                    const range = part.split("-");
 
-
-
-                    if (numbers.length !== 2) {
-
-                        return;
-
+                    if (range.length !== 2) {
+                        throw new Error("Invalid page range.");
                     }
 
-
-
-                    let start =
-                        parseInt(
-                            numbers[0].trim(),
-                            10
-                        );
-
-
-                    let end =
-                        parseInt(
-                            numbers[1].trim(),
-                            10
-                        );
-
-
+                    const start = Number(range[0].trim());
+                    const end = Number(range[1].trim());
 
                     if (
-                        isNaN(start) ||
-                        isNaN(end)
+                        !Number.isInteger(start) ||
+                        !Number.isInteger(end) ||
+                        start < 1 ||
+                        end < 1 ||
+                        start > totalPages ||
+                        end > totalPages ||
+                        start > end
                     ) {
-
-                        return;
-
+                        throw new Error("Invalid page range.");
                     }
 
-
-
-                    if (start > end) {
-
-                        const temporary =
-                            start;
-
-                        start =
-                            end;
-
-                        end =
-                            temporary;
-
+                    for (let i = start; i <= end; i++) {
+                        pages.add(i);
                     }
 
+                } else {
 
-
-                    for (
-                        let page = start;
-                        page <= end;
-                        page++
-                    ) {
-
-                        if (
-                            page >= 1 &&
-                            page <= totalPages
-                        ) {
-
-                            pages.push(
-                                page - 1
-                            );
-
-                        }
-
-                    }
-
-                }
-
-
-                else {
-
-                    const page =
-                        parseInt(
-                            part,
-                            10
-                        );
-
-
+                    const page = Number(part);
 
                     if (
-                        !isNaN(page) &&
-                        page >= 1 &&
-                        page <= totalPages
+                        !Number.isInteger(page) ||
+                        page < 1 ||
+                        page > totalPages
                     ) {
-
-                        pages.push(
-                            page - 1
-                        );
-
+                        throw new Error("Invalid page number.");
                     }
 
+                    pages.add(page);
                 }
-
             }
-        );
 
+            return Array.from(pages).sort((a, b) => a - b);
+        }
 
+        splitBtn.addEventListener("click", async function () {
 
-        return [
-            ...new Set(pages)
-        ];
+            if (!pdfFile.files.length) {
+                status.textContent = "Please select a PDF file.";
+                return;
+            }
 
-    }
+            if (!pageRange.value.trim()) {
+                status.textContent = "Please enter the pages to extract.";
+                return;
+            }
 
-</script>
+            try {
 
+                status.textContent = "Processing PDF...";
+
+                const file = pdfFile.files[0];
+                const arrayBuffer = await file.arrayBuffer();
+
+                const sourcePdf =
+                    await PDFLib.PDFDocument.load(arrayBuffer);
+
+                const totalPages = sourcePdf.getPageCount();
+
+                const selectedPages =
+                    parsePageRange(pageRange.value, totalPages);
+
+                if (selectedPages.length === 0) {
+                    throw new Error("No pages selected.");
+                }
+
+                const newPdf =
+                    await PDFLib.PDFDocument.create();
+
+                const pageIndexes =
+                    selectedPages.map(pageNumber => pageNumber - 1);
+
+                const copiedPages =
+                    await newPdf.copyPages(
+                        sourcePdf,
+                        pageIndexes
+                    );
+
+                copiedPages.forEach(page => {
+                    newPdf.addPage(page);
+                });
+
+                const pdfBytes = await newPdf.save();
+
+                const blob = new Blob(
+                    [pdfBytes],
+                    { type: "application/pdf" }
+                );
+
+                const url =
+                    URL.createObjectURL(blob);
+
+                const link =
+                    document.createElement("a");
+
+                link.href = url;
+                link.download = "split-pages.pdf";
+
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+
+                URL.revokeObjectURL(url);
+
+                status.textContent =
+                    "PDF split successfully!";
+
+            } catch (error) {
+
+                console.error(error);
+
+                status.textContent =
+                    error.message ||
+                    "Error splitting the PDF.";
+            }
+        });
+
+        clearBtn.addEventListener("click", function () {
+
+            pdfFile.value = "";
+            pageRange.value = "";
+            status.textContent = "";
+
+        });
+    </script>
 
 </body>
-
 </html>
