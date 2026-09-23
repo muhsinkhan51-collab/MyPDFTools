@@ -1,642 +1,257 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Merge PDF - MyPDFTools</title>
 
     <style>
-
         * {
             box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: Arial, sans-serif;
             background: #f5f7fb;
             color: #1f2937;
         }
 
-        header {
-            background: white;
-            border-bottom: 1px solid #e5e7eb;
-            padding: 20px 30px;
-        }
-
-        .header-inner {
-            max-width: 1100px;
-            margin: auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #111827;
-            text-decoration: none;
-        }
-
-        nav a {
-            margin-left: 25px;
-            text-decoration: none;
-            color: #374151;
-            font-weight: 500;
-        }
-
-        nav a:hover {
-            color: #2563eb;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 60px auto;
+        .header {
+            background: #111827;
+            color: white;
             padding: 20px;
-        }
-
-        .tool-box {
-            background: white;
-            border-radius: 16px;
-            padding: 40px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
             text-align: center;
         }
 
-        .tool-icon {
-            font-size: 55px;
-            margin-bottom: 15px;
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
         }
 
-        h1 {
-            margin: 0 0 10px;
-            font-size: 34px;
-            color: #111827;
+        .header p {
+            margin: 8px 0 0;
+            color: #cbd5e1;
         }
 
-        .description {
-            color: #6b7280;
-            margin-bottom: 30px;
-            font-size: 16px;
+        .container {
+            max-width: 850px;
+            margin: 45px auto;
+            padding: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
         }
 
         .upload-area {
-            border: 2px dashed #cbd5e1;
+            border: 2px dashed #94a3b8;
             border-radius: 12px;
-            padding: 35px 20px;
+            padding: 35px;
+            text-align: center;
             margin-bottom: 25px;
             background: #f8fafc;
         }
 
-        .upload-area p {
-            margin: 10px 0;
-            color: #64748b;
+        .upload-area input {
+            margin-top: 15px;
         }
 
-        input[type="file"] {
-            display: none;
-        }
-
-        .upload-button {
-            display: inline-block;
-            padding: 13px 25px;
-            background: #2563eb;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-        }
-
-        .upload-button:hover {
-            background: #1d4ed8;
-        }
-
-        #fileList {
-            text-align: left;
-            margin-top: 20px;
+        .file-list {
+            margin: 20px 0;
         }
 
         .file-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #f8fafc;
-            border: 1px solid #e5e7eb;
+            background: #f1f5f9;
             padding: 12px 15px;
-            border-radius: 8px;
             margin-bottom: 8px;
+            border-radius: 8px;
         }
 
-        .file-number {
-            font-weight: bold;
-            margin-right: 10px;
-            color: #2563eb;
-        }
-
-        .file-name {
-            flex: 1;
-            word-break: break-word;
-        }
-
-        .remove-button {
+        .remove-btn {
+            background: #ef4444;
+            color: white;
             border: none;
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 7px 12px;
             border-radius: 6px;
+            padding: 6px 10px;
             cursor: pointer;
-            font-weight: 600;
         }
 
-        .remove-button:hover {
-            background: #fecaca;
-        }
-
-        .action-buttons {
-            margin-top: 25px;
+        .buttons {
             display: flex;
-            justify-content: center;
             gap: 12px;
             flex-wrap: wrap;
+            margin-top: 25px;
         }
 
         button {
-            font-family: inherit;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
         }
 
-        .merge-button {
-            border: none;
-            background: #16a34a;
+        #mergeBtn {
+            background: #2563eb;
             color: white;
-            padding: 14px 28px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
         }
 
-        .merge-button:hover {
-            background: #15803d;
+        #clearBtn {
+            background: #64748b;
+            color: white;
         }
 
-        .merge-button:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
-        }
-
-        .clear-button {
-            border: none;
-            background: #e5e7eb;
-            color: #374151;
-            padding: 14px 28px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-        }
-
-        .clear-button:hover {
-            background: #d1d5db;
+        button:hover {
+            opacity: 0.9;
         }
 
         #status {
             margin-top: 20px;
-            font-weight: 600;
-            color: #374151;
+            font-weight: bold;
         }
 
-        .back-link {
+        .back {
             display: inline-block;
-            margin-top: 30px;
+            margin-top: 25px;
             text-decoration: none;
             color: #2563eb;
-            font-weight: 600;
+            font-weight: bold;
         }
-
-        footer {
-            text-align: center;
-            padding: 30px;
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        @media (max-width: 600px) {
-
-            .tool-box {
-                padding: 25px 15px;
-            }
-
-            h1 {
-                font-size: 28px;
-            }
-
-            header {
-                padding: 18px;
-            }
-
-            .header-inner {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            nav a {
-                margin: 0 8px;
-            }
-
-        }
-
     </style>
-
 </head>
-
 
 <body>
 
-
-<header>
-
-    <div class="header-inner">
-
-        <a
-            href="index.html"
-            class="logo"
-        >
-            MyPDFTools
-        </a>
-
-        <nav>
-
-            <a href="index.html">
-                Home
-            </a>
-
-            <a href="index.html#tools">
-                Tools
-            </a>
-
-        </nav>
-
+    <div class="header">
+        <h1>Merge PDF</h1>
+        <p>Combine multiple PDF files into one PDF</p>
     </div>
 
-</header>
+    <div class="container">
+        <div class="card">
 
+            <div class="upload-area">
+                <h2>Select PDF Files</h2>
+                <p>Choose two or more PDF files to merge.</p>
+                <input type="file" id="pdfFiles" accept=".pdf,application/pdf" multiple>
+            </div>
 
+            <div id="fileList" class="file-list"></div>
 
-<main class="container">
+            <div class="buttons">
+                <button id="mergeBtn">Merge PDFs</button>
+                <button id="clearBtn">Clear</button>
+            </div>
 
-    <div class="tool-box">
+            <div id="status"></div>
 
-        <div class="tool-icon">
-            📑
-        </div>
-
-        <h1>
-            Merge PDF
-        </h1>
-
-        <p class="description">
-            Combine multiple PDF files into one document quickly and easily.
-        </p>
-
-
-        <div class="upload-area">
-
-            <label
-                for="pdfFiles"
-                class="upload-button"
-            >
-                Choose PDF Files
-            </label>
-
-            <input
-                type="file"
-                id="pdfFiles"
-                accept="application/pdf,.pdf"
-                multiple
-            >
-
-            <p>
-                Select two or more PDF files
-            </p>
+            <a href="index.html" class="back">← Back to MyPDFTools</a>
 
         </div>
-
-
-        <div id="fileList"></div>
-
-
-        <div class="action-buttons">
-
-            <button
-                id="mergeButton"
-                class="merge-button"
-                disabled
-            >
-                Merge PDFs
-            </button>
-
-            <button
-                id="clearButton"
-                class="clear-button"
-            >
-                Clear
-            </button>
-
-        </div>
-
-
-        <div id="status"></div>
-
-
-        <a
-            href="index.html"
-            class="back-link"
-        >
-            ← Back to MyPDFTools
-        </a>
-
     </div>
 
-</main>
-
-
-
-<footer>
-
-    © 2026 MyPDFTools. All rights reserved.
-
-</footer>
-
-
-
-<!-- PDF-LIB -->
-
-<script src="node_modules/pdf-lib/dist/pdf-lib.min.js"></script>
-
-
-
-<script>
-
-    const fileInput =
-        document.getElementById("pdfFiles");
-
-    const fileList =
-        document.getElementById("fileList");
-
-    const mergeButton =
-        document.getElementById("mergeButton");
-
-    const clearButton =
-        document.getElementById("clearButton");
-
-    const status =
-        document.getElementById("status");
-
-
-    let selectedFiles = [];
-
-
-
-    fileInput.addEventListener(
-        "change",
-        function () {
-
-            const newFiles =
-                Array.from(fileInput.files);
-
-            selectedFiles =
-                selectedFiles.concat(newFiles);
-
-            updateFileList();
-
-            fileInput.value = "";
-
-        }
-    );
-
-
-
-    function updateFileList() {
-
-        fileList.innerHTML = "";
-
-
-        selectedFiles.forEach(
-            function (file, index) {
-
-                const item =
-                    document.createElement("div");
-
-                item.className = "file-item";
-
-
-                const number =
-                    document.createElement("span");
-
-                number.className = "file-number";
-
-                number.textContent =
-                    (index + 1) + ".";
-
-
-                const name =
-                    document.createElement("span");
-
-                name.className = "file-name";
-
-                name.textContent =
-                    file.name;
-
-
-                const remove =
-                    document.createElement("button");
-
-                remove.className =
-                    "remove-button";
-
-                remove.textContent =
-                    "Remove";
-
-
-                remove.addEventListener(
-                    "click",
-                    function () {
-
-                        selectedFiles.splice(index, 1);
-
-                        updateFileList();
-
-                    }
-                );
-
-
-                item.appendChild(number);
-
-                item.appendChild(name);
-
-                item.appendChild(remove);
-
-                fileList.appendChild(item);
-
-            }
-        );
-
-
-        mergeButton.disabled =
-            selectedFiles.length < 2;
-
-    }
-
-
-
-    clearButton.addEventListener(
-        "click",
-        function () {
-
-            selectedFiles = [];
-
+    <!-- PDF-LIB from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+    <script>
+        const pdfFiles = document.getElementById("pdfFiles");
+        const fileList = document.getElementById("fileList");
+        const mergeBtn = document.getElementById("mergeBtn");
+        const clearBtn = document.getElementById("clearBtn");
+        const status = document.getElementById("status");
+
+        let selectedFiles = [];
+
+        pdfFiles.addEventListener("change", function () {
+            selectedFiles = Array.from(pdfFiles.files);
+            displayFiles();
+        });
+
+        function displayFiles() {
             fileList.innerHTML = "";
 
-            status.textContent = "";
+            selectedFiles.forEach((file, index) => {
+                const item = document.createElement("div");
+                item.className = "file-item";
 
-            mergeButton.disabled = true;
+                item.innerHTML = `
+                    <span>${index + 1}. ${file.name}</span>
+                    <button class="remove-btn" onclick="removeFile(${index})">Remove</button>
+                `;
 
+                fileList.appendChild(item);
+            });
         }
-    );
 
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            displayFiles();
+        }
 
+        clearBtn.addEventListener("click", function () {
+            selectedFiles = [];
+            pdfFiles.value = "";
+            fileList.innerHTML = "";
+            status.textContent = "";
+        });
 
-    mergeButton.addEventListener(
-        "click",
-        async function () {
+        mergeBtn.addEventListener("click", async function () {
 
             if (selectedFiles.length < 2) {
-
-                status.textContent =
-                    "Please select at least two PDF files.";
-
+                status.textContent = "Please select at least 2 PDF files.";
                 return;
-
             }
 
-
             try {
+                status.textContent = "Merging PDFs...";
 
-                mergeButton.disabled = true;
+                const mergedPdf = await PDFLib.PDFDocument.create();
 
-                clearButton.disabled = true;
+                for (const file of selectedFiles) {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdf = await PDFLib.PDFDocument.load(arrayBuffer);
 
-                status.textContent =
-                    "Merging PDF files...";
-
-
-                const mergedPdf =
-                    await PDFLib.PDFDocument.create();
-
-
-                for (
-                    const file of selectedFiles
-                ) {
-
-                    const arrayBuffer =
-                        await file.arrayBuffer();
-
-
-                    const pdf =
-                        await PDFLib.PDFDocument.load(
-                            arrayBuffer
-                        );
-
-
-                    const pages =
-                        await mergedPdf.copyPages(
-                            pdf,
-                            pdf.getPageIndices()
-                        );
-
-
-                    pages.forEach(
-                        function (page) {
-
-                            mergedPdf.addPage(page);
-
-                        }
+                    const pages = await mergedPdf.copyPages(
+                        pdf,
+                        pdf.getPageIndices()
                     );
 
+                    pages.forEach(page => {
+                        mergedPdf.addPage(page);
+                    });
                 }
 
+                const mergedBytes = await mergedPdf.save();
 
-                const mergedBytes =
-                    await mergedPdf.save();
+                const blob = new Blob([mergedBytes], {
+                    type: "application/pdf"
+                });
 
+                const url = URL.createObjectURL(blob);
 
-                const blob =
-                    new Blob(
-                        [mergedBytes],
-                        {
-                            type: "application/pdf"
-                        }
-                    );
-
-
-                const url =
-                    URL.createObjectURL(blob);
-
-
-                const downloadLink =
-                    document.createElement("a");
-
-                downloadLink.href = url;
-
-                downloadLink.download =
-                    "merged.pdf";
-
-                document.body.appendChild(
-                    downloadLink
-                );
-
-                downloadLink.click();
-
-                downloadLink.remove();
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "merged.pdf";
+                link.click();
 
                 URL.revokeObjectURL(url);
 
-
-                status.textContent =
-                    "PDF files merged successfully!";
-
-            }
-            catch (error) {
-
+                status.textContent = "PDFs merged successfully!";
+            } catch (error) {
                 console.error(error);
-
                 status.textContent =
-                    "Error: Unable to merge the PDF files.";
-
+                    "Error merging PDFs. Please check your files.";
             }
-            finally {
-
-                mergeButton.disabled =
-                    selectedFiles.length < 2;
-
-                clearButton.disabled = false;
-
-            }
-
-        }
-    );
-
-</script>
-
+        });
+    </script>
 
 </body>
-
 </html>
